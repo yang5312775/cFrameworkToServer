@@ -22,7 +22,30 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\main.cpp">
+    <ClCompile Include="utils\basic_struct\dict.cpp" />
+    <ClCompile Include="utils\basic_struct\list.cpp" />
+    <ClCompile Include="utils\basic_struct\rtree.cpp" />
+    <ClCompile Include="utils\basic_struct\mq.c" />
+    <ClCompile Include="utils\thread_pool.c" />
+    <ClCompile Include="utils\socket_basic.c" />
+    <ClCompile Include="utils\random.c" />
+    <ClCompile Include="utils\mysql_connection_pool.c" />
+    <ClCompile Include="utils\mysql_basic.c" />
+    <ClCompile Include="utils\memory_pool.c" />
+    <ClCompile Include="utils\log.c" />
+    <ClCompile Include="utils\en_de_crypt.c" />
+    <ClCompile Include="utils\config.c" />
+    <ClCompile Include="utils\c_json.c" />
+    <ClCompile Include="utils\basic.c" />
+    <ClCompile Include="test\test_mysql_connection_pool.c" />
+    <ClCompile Include="test\test_mysql_basic.c" />
+    <ClCompile Include="test\test_memory_pool.c" />
+    <ClCompile Include="test\test_log.c" />
+    <ClCompile Include="test\test_en_de_crypt.c" />
+    <ClCompile Include="test\test_config.c" />
+    <ClCompile Include="test\test_c_json.c" />
+    <ClCompile Include="test\test_basic.c" />
+    <ClCompile Include="src\main.c">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -30,5 +53,35 @@
     <None Include="conf\config.ini">
       <Filter>conf</Filter>
     </None>
+    <None Include="third\openssl\lib\win32\libeay32.dll" />
+    <None Include="third\pthread\lib\win32\pthreadVC2.dll" />
+    <None Include="third\mysql\lib\win32\libmysql.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="utils\basic.h" />
+    <ClInclude Include="utils\en_de_crypt.h" />
+    <ClInclude Include="third\pthread\include\pthread.h" />
+    <ClInclude Include="third\pthread\include\sched.h" />
+    <ClInclude Include="third\pthread\include\semaphore.h" />
+    <ClInclude Include="utils\thread_pool.h" />
+    <ClInclude Include="utils\define.h" />
+    <ClInclude Include="utils\mysql_basic.h" />
+    <ClInclude Include="utils\mysql_connection_pool.h" />
+    <ClInclude Include="utils\config.h" />
+    <ClInclude Include="utils\log.h" />
+    <ClInclude Include="utils\c_json.h" />
+    <ClInclude Include="utils\memory_pool.h" />
+    <ClInclude Include="utils\random.h" />
+    <ClInclude Include="utils\socket_basic.h" />
+    <ClInclude Include="utils\basic_struct\dict.h" />
+    <ClInclude Include="utils\basic_struct\list.h" />
+    <ClInclude Include="utils\basic_struct\mq.h" />
+    <ClInclude Include="utils\basic_struct\rtree.h" />
+    <ClInclude Include="test\test_thread_pool.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="third\openssl\lib\win32\libeay32.lib" />
+    <Library Include="third\pthread\lib\win32\pthreadVC2.lib" />
+    <Library Include="third\mysql\lib\win32\libmysql.lib" />
   </ItemGroup>
 </Project>

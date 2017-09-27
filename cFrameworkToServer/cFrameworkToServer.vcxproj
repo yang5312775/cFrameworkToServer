@@ -71,6 +71,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(ProjectDir)utils;$(ProjectDir)third\pthread\include;$(ProjectDir)third\mysql\include;$(ProjectDir)utils\basic_struct;$(ProjectDir)third\openssl;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)third\openssl\lib\win32;$(ProjectDir)third\pthread\lib\win32;$(ProjectDir)third\mysql\lib\win32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -87,8 +89,9 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -147,9 +150,62 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="conf\config.ini" />
+    <None Include="third\mysql\lib\win32\libmysql.dll" />
+    <None Include="third\openssl\lib\win32\libeay32.dll" />
+    <None Include="third\pthread\lib\win32\pthreadVC2.dll" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\main.c" />
+    <ClCompile Include="test\test_en_de_crypt.c" />
+    <ClCompile Include="test\test_basic.c" />
+    <ClCompile Include="test\test_c_json.c" />
+    <ClCompile Include="test\test_config.c" />
+    <ClCompile Include="test\test_log.c" />
+    <ClCompile Include="test\test_memory_pool.c" />
+    <ClCompile Include="test\test_mysql_basic.c" />
+    <ClCompile Include="test\test_mysql_connection_pool.c" />
+    <ClCompile Include="utils\basic.c" />
+    <ClCompile Include="utils\basic_struct\dict.cpp" />
+    <ClCompile Include="utils\basic_struct\list.cpp" />
+    <ClCompile Include="utils\basic_struct\mq.c" />
+    <ClCompile Include="utils\basic_struct\rtree.cpp" />
+    <ClCompile Include="utils\c_json.c" />
+    <ClCompile Include="utils\config.c" />
+    <ClCompile Include="utils\en_de_crypt.c" />
+    <ClCompile Include="utils\log.c" />
+    <ClCompile Include="utils\memory_pool.c" />
+    <ClCompile Include="utils\mysql_basic.c" />
+    <ClCompile Include="utils\mysql_connection_pool.c" />
+    <ClCompile Include="utils\random.c" />
+    <ClCompile Include="utils\socket_basic.c" />
+    <ClCompile Include="utils\thread_pool.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="test\test_thread_pool.c" />
+    <ClInclude Include="third\pthread\include\pthread.h" />
+    <ClInclude Include="third\pthread\include\sched.h" />
+    <ClInclude Include="third\pthread\include\semaphore.h" />
+    <ClInclude Include="utils\basic.h" />
+    <ClInclude Include="utils\basic_struct\dict.h" />
+    <ClInclude Include="utils\basic_struct\list.h" />
+    <ClInclude Include="utils\basic_struct\mq.h" />
+    <ClInclude Include="utils\basic_struct\rtree.h" />
+    <ClInclude Include="utils\c_json.h" />
+    <ClInclude Include="utils\config.h" />
+    <ClInclude Include="utils\define.h" />
+    <ClInclude Include="utils\en_de_crypt.h" />
+    <ClInclude Include="utils\log.h" />
+    <ClInclude Include="utils\memory_pool.h" />
+    <ClInclude Include="utils\mysql_basic.h" />
+    <ClInclude Include="utils\mysql_connection_pool.h" />
+    <ClInclude Include="utils\random.h" />
+    <ClInclude Include="utils\socket_basic.h" />
+    <ClInclude Include="utils\thread_pool.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="third\mysql\lib\win32\libmysql.lib" />
+    <Library Include="third\openssl\lib\win32\libeay32.lib" />
+    <Library Include="third\pthread\lib\win32\pthreadVC2.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

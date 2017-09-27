@@ -1,0 +1,14 @@
+#ifndef _H_DEFINE
+#define _H_DEFINE
+
+#define RETURN_OK	0
+#define ERR_BASE	-1
+#define ERR_PARAM	-2
+#define	ERR_THREAD_CREATE_FAIL	-1
+#define ERR_CONFIG_FILE_OPEN_FAIL	-2
+#define ERR_DATABASE_CONNECT_FAIL	-3
+#define ERR_MEMORY_POOL_MALLOC_FAIL	-4
+#define ERR_MEMORY_POOL_NOT_INIT	-5
+
+
+#endif
