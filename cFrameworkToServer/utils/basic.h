@@ -31,6 +31,10 @@
 
 //internal include file
 #include"define.h"
+#include"config.h"
+#include"log.h"
+#include"memory_pool.h"
+#include"random.h"
 
 //linux include file
 #ifdef __GNUC__

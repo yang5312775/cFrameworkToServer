@@ -3,27 +3,24 @@
 #include<basic.h>
 
 
-
-
-typedef struct bpn memory_pool_node;
-struct bpn{
-	unsigned int column;
-	unsigned char * data;
-	memory_pool_node * next;
-};
-
-typedef struct{
+typedef struct {
 	unsigned int total_count;
-	unsigned int used_count;
+	unsigned int remain_count;
 	unsigned int block_len;
-	memory_pool_node  * free_header;
-	memory_pool_node  * used_header;
+	long long 	addr_start;
+	long long	addr_end;
+	void  **header;
 }memory_pool_colume;
 
+//内存池初始化
+int MALLOC_INIT(unsigned int colume_no, unsigned int block_len[], unsigned int block_count[]);
+//申请内存
+void * MALLOC(unsigned int size);
+//回收内存
+int FREE(void * buffer);
+//内存池销毁
+int MALLOC_UNINIT(void);
+//内存池状态打印
+int MALLOC_PRINT(void);
 
-int buffer_pool_init(unsigned int colume_no, unsigned int block_len[], unsigned int block_count[]);
-memory_pool_node * buffer_malloc(unsigned int size);
-int buffer_free(memory_pool_node * buffer);
-int buffer_pool_destory(void);
-int buffer_runtime_print(void);
 #endif

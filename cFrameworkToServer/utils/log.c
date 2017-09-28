@@ -5,13 +5,13 @@
 extern FILE * logFile = NULL;
 
 
-int initLog(Config * conf)
+int initLog(char * log_directory)
 {
 	char path[256];
 	time_t time_log = time(NULL);
 	struct tm* tm_log = localtime(&time_log);
 	memset(path , 0 , 256);
-	sprintf(path , "%sLOG%04d-%02d-%02d.txt" , conf->logPath , tm_log->tm_year + 1900, tm_log->tm_mon + 1, tm_log->tm_mday);
+	sprintf(path , "%sLOG%04d-%02d-%02d.txt" , log_directory, tm_log->tm_year + 1900, tm_log->tm_mon + 1, tm_log->tm_mday);
 	logFile = fopen(path, "wb+");
 	if (logFile == NULL)
 		return ERR_CONFIG_FILE_OPEN_FAIL;

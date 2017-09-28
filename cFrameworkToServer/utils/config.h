@@ -2,7 +2,6 @@
 #define config_h
 #include<basic.h>
 
-
 typedef struct {
 	char logPath[256];
 	char serverPort[6];
@@ -20,6 +19,18 @@ typedef struct {
 	char multicastPORT[6];
 }Config;
 
-int loadConfig(char * configFilePath, Config * conf);
+extern Config serverConfig;
+//×°ÔØconfigÎÄ¼þ
+int loadConfig(char * configFilePath);
+
+
+//new version config
+typedef struct node  conf_node;
+
+struct node {
+	char * left;
+	char * right;
+	conf_node * next;
+};
 
 #endif

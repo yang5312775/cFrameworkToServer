@@ -23,9 +23,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="utils\basic_struct\dict.cpp" />
-    <ClCompile Include="utils\basic_struct\list.cpp" />
     <ClCompile Include="utils\basic_struct\rtree.cpp" />
-    <ClCompile Include="utils\basic_struct\mq.c" />
     <ClCompile Include="utils\thread_pool.c" />
     <ClCompile Include="utils\socket_basic.c" />
     <ClCompile Include="utils\random.c" />
@@ -48,6 +46,8 @@
     <ClCompile Include="src\main.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="utils\basic_struct\list.c" />
+    <ClCompile Include="test\test_list.c" />
   </ItemGroup>
   <ItemGroup>
     <None Include="conf\config.ini">
@@ -75,7 +75,6 @@
     <ClInclude Include="utils\socket_basic.h" />
     <ClInclude Include="utils\basic_struct\dict.h" />
     <ClInclude Include="utils\basic_struct\list.h" />
-    <ClInclude Include="utils\basic_struct\mq.h" />
     <ClInclude Include="utils\basic_struct\rtree.h" />
     <ClInclude Include="test\test_thread_pool.c" />
   </ItemGroup>

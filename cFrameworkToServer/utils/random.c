@@ -41,7 +41,7 @@ static void srand_next(void) {
 // seed		: 种子数
 // return	: void
 //
-inline void
+void
 srand_init(int32_t seed) {
 	_x[0] = X0; _x[1] = LOW(seed); _x[2] = HIGH(seed);
 	_a[0] = A0; _a[1] = A1; _a[2] = A2;
@@ -49,19 +49,19 @@ srand_init(int32_t seed) {
 }
 
 // sh_rand  - 得到[0, INT32_MAX]随机数
-inline int32_t
+int32_t
 srand_get_int32(void) {
 	srand_next();
 	return (_x[2] << (N - 1)) + (_x[1] >> 1);
 }
 // sh_rands - 得到[min, max] 范围内随机数
-inline int32_t
+int32_t
 srand_get_limit_int32(int32_t min, int32_t max) {
 	assert(max > min);
 	return srand_get_int32() % (max - min + 1) + min;
 }
 // sh_randk - 得到一个64位的key
-inline int64_t
+int64_t
 srand_get_int64(void) {
 	uint64_t x = ((srand_get_int32() << N) ^ srand_get_int32()) & INT32_MAX;
 	uint64_t y = ((srand_get_int32() << N) ^ srand_get_int32()) & INT32_MAX;

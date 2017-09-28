@@ -1,9 +1,13 @@
 #include"config.h"
 
-int loadConfig(char * configFilePath , Config * conf)
+Config serverConfig;
+
+int loadConfig(char * configFilePath)
 {
 	FILE * confFile = NULL;
 	char buff_line[512];
+	memset(&serverConfig, 0, sizeof(Config));
+	Config * conf = &serverConfig;
 	confFile = fopen(configFilePath, "r");
 	if (confFile == NULL)
 		return ERR_CONFIG_FILE_OPEN_FAIL;

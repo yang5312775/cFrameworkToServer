@@ -11,4 +11,6 @@
 #define ERR_MEMORY_POOL_NOT_INIT	-5
 
 
+#define ERR_LIST_BASE	-100
+
 #endif

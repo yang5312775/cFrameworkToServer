@@ -2,140 +2,93 @@
 
 memory_pool_colume * b_p = NULL;
 int buffer_pool_no = 0;
+pthread_spinlock_t  memory_spin_lock;
 
-int buffer_pool_init(unsigned int colume_no, unsigned int block_len[] , unsigned int block_count[])
+int MALLOC_INIT(unsigned int colume_no, unsigned int block_len[], unsigned int block_count[])
 {
 	b_p = (memory_pool_colume *)malloc(sizeof(memory_pool_colume) * colume_no);
 	if (b_p == NULL)
 		return ERR_MEMORY_POOL_MALLOC_FAIL;
-	memset(b_p , 0 , sizeof(memory_pool_colume) * colume_no);
+	memset(b_p, 0, sizeof(memory_pool_colume) * colume_no);
 	buffer_pool_no = colume_no;
-
-
-	memory_pool_node * curr_node = NULL;
-	memory_pool_node * new_node = NULL;
 	for (int i = 0; i < colume_no; i++)
 	{
 		b_p[i].block_len = block_len[i];
 		b_p[i].total_count = block_count[i];
+		b_p[i].remain_count = block_count[i];
+		b_p[i].addr_start = malloc(b_p[i].block_len * b_p[i].total_count);
+		memset(b_p[i].addr_start , 0 , b_p[i].block_len * b_p[i].total_count);
+		b_p[i].addr_end = b_p[i].addr_start + b_p[i].block_len * b_p[i].total_count -1;
+		b_p[i].header = malloc(sizeof(void *) * b_p[i].total_count);
 		for (int j = 0; j < block_count[i]; j++)
 		{
-			new_node =(memory_pool_node *)malloc(sizeof(memory_pool_node));
-			new_node->column = i;
-			new_node->data =(unsigned char *) malloc(block_len[i]);
-			memset(new_node->data , 0 ,block_len[i]);
-			if (new_node == NULL || new_node->data == NULL)
-				return ERR_MEMORY_POOL_MALLOC_FAIL;
-			new_node->next = NULL;
-			if (j == 0)
-			{
-				b_p[i].free_header = new_node;
-				curr_node = b_p[i].free_header;
-			}
-			else
-			{
-				curr_node->next = new_node;
-				curr_node = curr_node->next;
-			}
+			b_p[i].header[j] = b_p[i].addr_start + j * b_p[i].block_len;
 		}
 	}
+	pthread_spin_init(&memory_spin_lock, PTHREAD_PROCESS_PRIVATE);
 	return RETURN_OK;
 }
 
-memory_pool_node * buffer_malloc(unsigned int size)
+void * MALLOC(unsigned int size)
 {
-	memory_pool_node * node = NULL;
+	void * buffer = NULL;
 	if (size > b_p[buffer_pool_no - 1].block_len)
 	{
-		printf("malloc size[%d] so big ,need new from stack!!\n" , size);
-a:		node = (memory_pool_node *)malloc(sizeof(memory_pool_node));
-		node->column = 9999;
-		node->data = (unsigned char *)malloc(size);
-		memset(node->data, 0, size);
-		if (node == NULL || node->data == NULL)
+		printf("malloc size[%d] so big ,need new from stack!!\n", size);
+a:		buffer = malloc(size);
+		memset(buffer, 0, size);
+		if (buffer == NULL)
 			return NULL;
-		node->next = NULL;
-		return node;
+		return buffer;
 	}
-	for (int i = 0 ; i < buffer_pool_no ; i++)
+	for (int i = 0; i < buffer_pool_no; i++)
 	{
 		if (size > b_p[i].block_len)
 			continue;
-		if (b_p[i].total_count - b_p[i].used_count == 0)
+		pthread_spin_lock(&memory_spin_lock);
+		if (b_p[i].remain_count == 0)
 		{
-			printf("warning!!!!  size[%d]pool use up!!!! \n" , b_p[i].block_len);
+			printf("warning!!!!  size[%d]pool use up!!!! \n", b_p[i].block_len);
+			pthread_spin_unlock(&memory_spin_lock);
 			continue;
 		}
-		node = b_p[i].free_header;
-		b_p[i].free_header = b_p[i].free_header->next;
-		b_p[i].used_count++;
-		node->next = b_p[i].used_header;
-		b_p[i].used_header = node;
-		return node;
+		buffer = b_p[i].header[b_p[i].remain_count-1];
+		b_p[i].remain_count--;
+		pthread_spin_unlock(&memory_spin_lock);
+		memset(buffer , 0 , b_p[i].block_len);
+		return buffer;
 	}
-	printf("warning!!!!  all of pool used up!!!! \n");
+	printf("warning!!!!  all of pool used up , need new from stack!!!!!! \n");
 	goto a;
 }
 
-int buffer_free(memory_pool_node * buffer)
+int FREE(void * buffer)
 {
-	memory_pool_node * node_cur = b_p[buffer->column].used_header;
-	memory_pool_node * node_pre = NULL;
-	if (buffer->column == 9999)
+	int flag = 0;
+	for (int i = 0; i < buffer_pool_no; i++)
 	{
-		free(buffer->data);
+		if (buffer > b_p[i].addr_start && buffer < b_p[i].addr_end)
+		{
+			pthread_spin_lock(&memory_spin_lock);
+			b_p[i].header[b_p[i].remain_count++] = buffer;
+			pthread_spin_unlock(&memory_spin_lock);
+			flag = 1;
+			break;
+		}	
+	}
+	if (flag == 0)
 		free(buffer);
-		buffer = NULL;
-		return RETURN_OK;
-	}
-	while(node_cur != NULL)
-	{
-		if (node_cur != buffer)
-		{
-			node_pre = node_cur;
-			node_cur = node_cur->next;
-			continue;
-		}
-		if (node_pre == NULL)
-		{
-			b_p[buffer->column].used_header = b_p[buffer->column].used_header->next;
-		}
-		else
-		{
-			node_pre->next = node_cur->next;
-		}
-		b_p[buffer->column].used_count--;
-		node_cur->next = b_p[buffer->column].free_header;
-		b_p[buffer->column].free_header = node_cur;
-		break;
-	}
 	return RETURN_OK;
 }
 
-int buffer_pool_destory(void)
+int MALLOC_UNINIT(void)
 {
-	memory_pool_node * node_cur = NULL;
-	memory_pool_node * node_del = NULL;
 	if (b_p == NULL)
 		return ERR_MEMORY_POOL_NOT_INIT;
 	for (int i = 0; i < buffer_pool_no; i++)
 	{
-		node_cur = b_p[i].used_header;
-		while (node_cur != NULL)
-		{
-			node_del = node_cur;
-			node_cur = node_cur->next;
-			free(node_del->data);
-			free(node_del);
-		}
-		node_cur = b_p[i].free_header;
-		while (node_cur != NULL)
-		{
-			node_del = node_cur;
-			node_cur = node_cur->next;
-			free(node_del->data);
-			free(node_del);
-		}
+		free(b_p[i].addr_start);
+		free(b_p[i].header);
 	}
 	free(b_p);
 	b_p = NULL;
@@ -143,7 +96,7 @@ int buffer_pool_destory(void)
 	return RETURN_OK;
 }
 
-int buffer_runtime_print(void)
+int MALLOC_PRINT(void)
 {
 	if (b_p == NULL)
 	{
@@ -153,8 +106,8 @@ int buffer_runtime_print(void)
 	printf("\n*********************** memory pool runtime report start************************\n");
 	for (int i = 0; i < buffer_pool_no; i++)
 	{
-		printf("pool no[%d] blocksize[%d] blockTotalCount[%d] usedBlock[%d] used percentage[%d%%]\n" \
-			, i , b_p[i].block_len , b_p[i].total_count , b_p[i].used_count , b_p[i].used_count*100/ b_p[i].total_count);
+		printf("pool no[%d] blocksize[%d] blockTotalCount[%d] used count[%d] used percentage[%d%%]\n" \
+			, i, b_p[i].block_len, b_p[i].total_count, b_p[i].total_count - b_p[i].remain_count, (b_p[i].total_count - b_p[i].remain_count) * 100/ b_p[i].total_count);
 	}
 	printf("*********************** memory pool runtime report end**************************\n");
 	return RETURN_OK;

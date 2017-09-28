@@ -1,0 +1,20 @@
+2017-09-27 18:39:20 load config success
+2017-09-27 18:39:20 *****************************
+2017-09-27 18:39:20 logPath:[C:\\Users\\dbstar\\workSpace\\dbstar_svn]
+2017-09-27 18:39:20 serverPort:[8888]
+2017-09-27 18:39:20 mysqlIP:[localhost]
+2017-09-27 18:39:20 mysqlPort:[3306]
+2017-09-27 18:39:20 mysqlAccount:[root]
+2017-09-27 18:39:20 mysqlPassword:[5312775]
+2017-09-27 18:39:20 databaseName:[dbstardrm]
+2017-09-27 18:39:20 mysqlConnectionTimeout:[21600]seconds
+2017-09-27 18:39:20 authPushPoolCount:[3]
+2017-09-27 18:39:20 authPushPoolCapacity:2017-09-27 18:39:20 [10] 2017-09-27 18:39:20 [10] 2017-09-27 18:39:20 [10] 2017-09-27 18:39:20 
+authPushPoolRateX:2017-09-27 18:39:20 [10] 2017-09-27 18:39:20 [5] 2017-09-27 18:39:20 [2] 2017-09-27 18:39:20 
+authPushPoolBandwidth:[1000]kbps
+2017-09-27 18:39:20 multicastIP:[239.0.0.36]
+2017-09-27 18:39:20 multicastPORT:[7777]
+2017-09-27 18:39:20 *****************************
+2017-09-27 18:39:20 [100] connection create success!!
+2017-09-27 18:39:20 mysql connection poll init success
+2017-09-27 18:39:20 mysql connection pool check thread startup success!!

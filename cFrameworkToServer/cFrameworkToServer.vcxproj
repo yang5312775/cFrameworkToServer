@@ -160,14 +160,14 @@
     <ClCompile Include="test\test_basic.c" />
     <ClCompile Include="test\test_c_json.c" />
     <ClCompile Include="test\test_config.c" />
+    <ClCompile Include="test\test_list.c" />
     <ClCompile Include="test\test_log.c" />
     <ClCompile Include="test\test_memory_pool.c" />
     <ClCompile Include="test\test_mysql_basic.c" />
     <ClCompile Include="test\test_mysql_connection_pool.c" />
     <ClCompile Include="utils\basic.c" />
     <ClCompile Include="utils\basic_struct\dict.cpp" />
-    <ClCompile Include="utils\basic_struct\list.cpp" />
-    <ClCompile Include="utils\basic_struct\mq.c" />
+    <ClCompile Include="utils\basic_struct\list.c" />
     <ClCompile Include="utils\basic_struct\rtree.cpp" />
     <ClCompile Include="utils\c_json.c" />
     <ClCompile Include="utils\config.c" />
@@ -188,7 +188,6 @@
     <ClInclude Include="utils\basic.h" />
     <ClInclude Include="utils\basic_struct\dict.h" />
     <ClInclude Include="utils\basic_struct\list.h" />
-    <ClInclude Include="utils\basic_struct\mq.h" />
     <ClInclude Include="utils\basic_struct\rtree.h" />
     <ClInclude Include="utils\c_json.h" />
     <ClInclude Include="utils\config.h" />
