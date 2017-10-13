@@ -11,7 +11,8 @@ typedef struct {
 	long long	addr_end;
 	void  **header;
 }memory_pool_colume;
-
+//内存初始化，用字符串参数初始化
+int memoryPoolInit(char * colume_no_str, char * block_len_str, char * block_count_str[]);
 //内存池初始化
 int MALLOC_INIT(unsigned int colume_no, unsigned int block_len[], unsigned int block_count[]);
 //申请内存

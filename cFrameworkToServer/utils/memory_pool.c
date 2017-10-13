@@ -4,6 +4,33 @@ memory_pool_colume * b_p = NULL;
 int buffer_pool_no = 0;
 pthread_spinlock_t  memory_spin_lock;
 
+int memoryPoolInit(char * colume_no_str , char * block_len_str ,char * block_count_str)
+{
+	int ret = -1;
+	int colume_no = atoi(colume_no_str);
+	unsigned int * block_len = malloc(sizeof(unsigned int) * colume_no);
+	unsigned int * block_count = malloc(sizeof(unsigned int) * colume_no);
+	*strchr(block_len_str++, ']') = '\0';
+	*strchr(block_count_str++, ']') = '\0';
+	char* delim = ",";
+	char* p = strtok(block_len_str, delim);
+	for (int i = 0; i < colume_no; i++)
+	{
+		block_len[i] = atoi(p);
+		p = strtok(NULL, delim);
+	}
+	p = strtok(block_count_str, delim);
+	for (int i = 0; i < colume_no; i++)
+	{
+		block_count[i] = atoi(p);
+		p = strtok(NULL, delim);
+	}
+	ret = MALLOC_INIT(colume_no , block_len , block_count);
+	free(block_len);
+	free(block_count);
+}
+
+
 int MALLOC_INIT(unsigned int colume_no, unsigned int block_len[], unsigned int block_count[])
 {
 	b_p = (memory_pool_colume *)malloc(sizeof(memory_pool_colume) * colume_no);

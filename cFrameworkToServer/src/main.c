@@ -1,22 +1,38 @@
 #include<basic.h>
 
+#define START_SLOGAN "xxxxxxxxxxxxxxxxxxx system startup！"
+
 int main(int argc, const char * argv[])
 {
+	DEBUG("%s\n" , START_SLOGAN);
 	int ret = 0;
 	if (argc != 2)
 	{
 		printf("input argument error!!!\neg:%s /user/xxx/xxx/config.ini\npress any key to quit!!\n" , argv[0]);
-		getchar();
-		exit(0);
+		goto exit;
+	}
+	//配置文件加载
+	char * config_path = argv[1];
+	DEBUG("config_path:[%s]\n" , config_path);
+	ret = loadConfig(config_path);
+	if (ret != RETURN_OK)
+	{
+		DEBUG("load config file fail , errcode [%d]\n" , ret);
+		goto exit;
 	}
 	//初始化内存池
-	unsigned int a[10] = { 8 ,16 ,32 ,64 ,128 , 256 , 512 , 1024 ,2028 , 4096 };
-	unsigned int b[10] = { 100 ,500 ,1000 ,1500 ,2000 , 3000 , 4000 , 5000 ,4000 , 2000 };
-	MALLOC_INIT(10, a, b);
+	ret = memoryPoolInit(getConfig("memoryPoolLevel") , getConfig("memoryPoolCap") , getConfig("memoryPoolSize"));
+	if (ret != RETURN_OK)
+	{
+		DEBUG("memory pool init fail , errcode [%d]\n", ret);
+		goto exit;
+	}
 	// 初始化socket 库操作，主要是windows与linux的区别，windows要调用一些接口初始化
 	socket_start();
 	// 初始化随机序列，用于随机值后续的使用
 	srand_init((int32_t)time(NULL));
+
+
 
 
 
@@ -75,8 +91,9 @@ int main(int argc, const char * argv[])
 #endif
 
 //	TIME_PRINT(EXTERN_RUN(test_memory_pool););
-	TIME_PRINT(EXTERN_RUN(test_list););
-	
-	getchar();
+//	TIME_PRINT(EXTERN_RUN(test_list););
+	TIME_PRINT(EXTERN_RUN(test_dict););
+exit:	getchar();
 	return 0;
+
 }

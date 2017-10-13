@@ -100,6 +100,61 @@ unsigned int calc_hash(const char *key)
 	return hash;
 }
 
+//
+// Brian Kernighan与 Dennis Ritchie 简便快捷的 hash算法
+// str		: 字符串内容
+// return	: 返回计算后的hash值
+//
+unsigned
+tstr_hash(const char * str) {
+	register unsigned h = 0;
+	if (str) {
+		register unsigned c;
+		while ((c = *str++))
+			h = h * 131 + c;
+	}
+	return h;
+}
+
+/***************************************************************
+/*  函 数 名：Trim
+/*  函数功能：C语言版Trim()函数，去掉字符串中的空字符
+/*  参    数：
+/*            str	：源字符串
+/*  返 回 值：
+/*            返回去掉空字符后的字符串
+/*
+/*	依赖的头文件：
+/*					#include <stdlib.h>
+/*					#include <string.h>/*
+/*
+/*  作    者：X攻城狮
+/*  日    期：2015年11月7日
+/***************************************************************/
+char *Trim(const char *str)
+{
+	unsigned int uLen = strlen(str);
+
+	if (0 == uLen)
+	{
+		return '\0';
+	}
+
+	char *strRet = (char *)malloc(uLen + 1);
+	memset(strRet, 0, uLen + 1);
+
+	unsigned int i = 0, j = 0;
+	for (i = 0; i<uLen + 1; i++)
+	{
+		if (str[i] != ' ')
+		{
+			strRet[j++] = str[i];
+		}
+	}
+	strRet[j] = '\0';
+
+	return strRet;
+}
 
 
 /***************************************************************************************************

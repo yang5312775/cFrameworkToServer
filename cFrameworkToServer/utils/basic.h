@@ -35,7 +35,7 @@
 #include"log.h"
 #include"memory_pool.h"
 #include"random.h"
-
+#include"basic_struct\dict.h"
 //linux include file
 #ifdef __GNUC__
 #include <unistd.h>
@@ -80,8 +80,10 @@ void getTimeStr(unsigned int time, char * timeStr, int buffLen);
 
 //根据字符串产生hash值
 unsigned int calc_hash(const char *key);
-
-
+unsigned
+tstr_hash(const char * str);
+//去除字符串中的空格，返回一个malloc的字符串
+char *Trim(const char *str);
 
 #ifdef __GNUC__
 //创建目录路径，不存在就创建

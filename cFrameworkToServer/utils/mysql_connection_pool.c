@@ -4,7 +4,7 @@
 
 
 
-
+sqlConfig sqlC;
 MysqlBlock mysqlBlock[MAX_MYSQL_CONNECTION];
 pthread_mutex_t mutexMysqlPool;
 void* check_connection(void* Param);
@@ -32,16 +32,23 @@ int testConnection(MYSQL* conn)
 	return 0;
 }
 
-int mysqlConnectionPool_init(Config * conf)
+int mysqlConnectionPool_init(char * mysqlIP , char * mysqlPort , char * mysqlAccount , char * mysqlPassword , char * databaseName , char * mysqlConnectionTimeout)
 {
-
 	int i = 0;
+	memset(&sqlC , 0 , sizeof(sqlConfig));
+	strcpy(sqlC.ip , mysqlIP);
+	strcpy(sqlC.account, mysqlAccount);
+	strcpy(sqlC.password, mysqlPassword);
+	strcpy(sqlC.databaseName, databaseName);
+	sqlC.port = atoi(mysqlPort);
+	sqlC.connectionTimeout = atoi(mysqlConnectionTimeout);
+
 	pthread_mutex_init(&mutexMysqlPool, NULL);
 	for (i = 0; i < MAX_MYSQL_CONNECTION; i++)
 	{
 		memset(&mysqlBlock[i], 0, sizeof(MysqlBlock));
 		mysql_init(&(mysqlBlock[i].sql));
-		mysqlBlock[i].conn = mysql_real_connect(&(mysqlBlock[i].sql), conf->mysqlIP, conf->mysqlAccount, conf->mysqlPassword, conf->databaseName, 0, 0, 0);
+		mysqlBlock[i].conn = mysql_real_connect(&(mysqlBlock[i].sql), sqlC.ip, sqlC.account, sqlC.password, sqlC.databaseName, sqlC.port, 0, 0);
 		if (mysqlBlock[i].conn == NULL)
 		{
 			LOG("connection pool  init connection fail errcode:%s\n", mysql_error(&(mysqlBlock[i].sql)));
@@ -54,28 +61,27 @@ int mysqlConnectionPool_init(Config * conf)
 	pthread_attr_t attr;
 	pthread_attr_init(&attr);
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-	pthread_create(&pid, &attr, check_connection, (void *)conf);
+	pthread_create(&pid, &attr, check_connection, NULL);
 	pthread_attr_destroy(&attr);
 	return 0;
 }
 void* check_connection(void* Param)
 {
 	int i = 0;
-	Config * conf = (Config *)Param;
 	LOG("mysql connection pool check thread startup success!!\n");
 	while (1)
 	{
 		for (i = 0; i < MAX_MYSQL_CONNECTION; i++)
 		{
 			pthread_mutex_lock(&mutexMysqlPool);
-			if (mysqlBlock[i].useFlag == 0 && ((time(NULL) - mysqlBlock[i].lastUseTime) > conf->mysqlConnectionTimeout || testConnection(mysqlBlock[i].conn) != 0))
+			if (mysqlBlock[i].useFlag == 0 && ((time(NULL) - mysqlBlock[i].lastUseTime) > sqlC.connectionTimeout || testConnection(mysqlBlock[i].conn) != 0))
 			{
 
 				LOG("in check_connection thread , no.[%d] connection timeout ,need reconnect\n", i);
 				mysql_close(mysqlBlock[i].conn);
 				memset(&mysqlBlock[i], 0, sizeof(MysqlBlock));
 				mysql_init(&(mysqlBlock[i].sql));
-				mysqlBlock[i].conn = mysql_real_connect(&(mysqlBlock[i].sql), conf->mysqlIP, conf->mysqlAccount, conf->mysqlPassword, conf->databaseName, 0, 0, 0);
+				mysqlBlock[i].conn = mysql_real_connect(&(mysqlBlock[i].sql), sqlC.ip, sqlC.account, sqlC.password, sqlC.databaseName, sqlC.port, 0, 0);
 				if (mysqlBlock[i].conn == NULL)
 					LOG("warning !! in check_connection thread ,init connection fail errcode:%s\n", mysql_error(&(mysqlBlock[i].sql)));
 				mysqlBlock[i].lastUseTime = time(NULL);

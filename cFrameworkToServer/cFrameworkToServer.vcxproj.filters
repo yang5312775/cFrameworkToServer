@@ -22,8 +22,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="utils\basic_struct\dict.cpp" />
-    <ClCompile Include="utils\basic_struct\rtree.cpp" />
     <ClCompile Include="utils\thread_pool.c" />
     <ClCompile Include="utils\socket_basic.c" />
     <ClCompile Include="utils\random.c" />
@@ -48,6 +46,10 @@
     </ClCompile>
     <ClCompile Include="utils\basic_struct\list.c" />
     <ClCompile Include="test\test_list.c" />
+    <ClCompile Include="utils\basic_struct\dict.c" />
+    <ClCompile Include="utils\basic_struct\rtree.c" />
+    <ClCompile Include="test\test_dict.c" />
+    <ClCompile Include="utils\basic_struct\siphash.c" />
   </ItemGroup>
   <ItemGroup>
     <None Include="conf\config.ini">

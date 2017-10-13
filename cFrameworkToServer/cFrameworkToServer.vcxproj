@@ -71,7 +71,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)utils;$(ProjectDir)third\pthread\include;$(ProjectDir)third\mysql\include;$(ProjectDir)utils\basic_struct;$(ProjectDir)third\openssl;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)utils\basic_struct;$(ProjectDir)utils;$(ProjectDir)third\pthread\include;$(ProjectDir)third\mysql\include;$(ProjectDir)third\openssl;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)third\openssl\lib\win32;$(ProjectDir)third\pthread\lib\win32;$(ProjectDir)third\mysql\lib\win32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -156,6 +156,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.c" />
+    <ClCompile Include="test\test_dict.c" />
     <ClCompile Include="test\test_en_de_crypt.c" />
     <ClCompile Include="test\test_basic.c" />
     <ClCompile Include="test\test_c_json.c" />
@@ -166,9 +167,10 @@
     <ClCompile Include="test\test_mysql_basic.c" />
     <ClCompile Include="test\test_mysql_connection_pool.c" />
     <ClCompile Include="utils\basic.c" />
-    <ClCompile Include="utils\basic_struct\dict.cpp" />
+    <ClCompile Include="utils\basic_struct\dict.c" />
     <ClCompile Include="utils\basic_struct\list.c" />
-    <ClCompile Include="utils\basic_struct\rtree.cpp" />
+    <ClCompile Include="utils\basic_struct\rtree.c" />
+    <ClCompile Include="utils\basic_struct\siphash.c" />
     <ClCompile Include="utils\c_json.c" />
     <ClCompile Include="utils\config.c" />
     <ClCompile Include="utils\en_de_crypt.c" />
