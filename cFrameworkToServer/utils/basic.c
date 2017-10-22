@@ -146,7 +146,7 @@ char *Trim(const char *str)
 	unsigned int i = 0, j = 0;
 	for (i = 0; i<uLen + 1; i++)
 	{
-		if (str[i] != ' ')
+		if (str[i] != ' ' && str[i] != '\0')
 		{
 			strRet[j++] = str[i];
 		}

@@ -1,208 +1,350 @@
-﻿#include <list.h>
+﻿#include"list.h"
 
-list_manage l_m;
-//#define LIST_ID_BASE 1000
-//队列管理启动
-int list_manage_init(void)
+/* Create a new list. The created list can be freed with
+ * AlFreeList(), but private value of every node need to be freed
+ * by the user before to call AlFreeList().
+ *
+ * On error, NULL is returned. Otherwise the pointer to the new list. */
+list *listCreate(void)
 {
-	memset(&l_m, 0, sizeof(list_manage));
-	pthread_spin_init(&l_m.spin_lock, PTHREAD_PROCESS_PRIVATE);
-//	l_m.list_id_base = LIST_ID_BASE;
-	return 0;
-}
-//向队列管理中插入新队列
-int list_manage_add(list * li)
-{
-	list * temp = NULL;
-	if (li == NULL)
-		return err_list_invalid_input_argument;
-	pthread_spin_lock(&l_m.spin_lock);
-	l_m.count++;					//队列数加一
-	temp = l_m.head;				//保存管理队列头指针
-	l_m.head = li;					//将新队列挂载在管理队列头部
-	l_m.head->next = temp;			//新的头部的next指向老的头部
-	pthread_spin_unlock(&l_m.spin_lock);
-	return RETURN_OK;
+    struct list *list;
+
+    if ((list = MALLOC(sizeof(*list))) == NULL)
+        return NULL;
+    list->head = list->tail = NULL;
+    list->len = 0;
+    list->dup = NULL;
+    list->free = NULL;
+    list->match = NULL;
+    return list;
 }
 
-//向队列管理中删除队列
-int list_manage_del(list * li)
+/* Remove all the elements from the list without destroying the list itself. */
+void listEmpty(list *list)
 {
-	int ret = err_manage_list_del_query_fail;
-	if (li == NULL)
-		return err_list_invalid_input_argument;
-	list * pre = NULL;
-	list * curr = NULL;
-	pthread_spin_lock(&l_m.spin_lock);
-	curr = l_m.head;
-	while (curr != NULL)
-	{
-		if (curr == li )
-		{
-			if (curr->count != 0)
-			{
-				ret = err_manage_list_del_have_children_yet;
-				break;
-			}
-			l_m.count--;
-			if (pre == NULL)
-				l_m.head = l_m.head->next;
-			else
-				pre->next = curr->next;
-			FREE(curr->list_name);
-			pthread_spin_destroy(&curr->spin_lock);
-			FREE(curr);
-			ret = RETURN_OK;
-			break;
-		}
-		else
-		{
-			pre = curr;
-			curr = curr->next;
-		}
-	}
-	pthread_spin_unlock(&l_m.spin_lock);
-	return ret;
-}
-//队列管理关闭
-int list_manage_uninit(void)
-{
-	list * curr = NULL;
-	list * temp = NULL;
-	curr = l_m.head;
-	while (curr != NULL)
-	{
-		temp = curr;
-		curr = curr->next;
-		list_destory(temp);
-	}
-	pthread_spin_destroy(&l_m.spin_lock);
-	memset(&l_m, 0, sizeof(list_manage));
-	return RETURN_OK;
+    unsigned long len;
+    listNode *current, *next;
+
+    current = list->head;
+    len = list->len;
+    while(len--) {
+        next = current->next;
+        if (list->free) list->free(current->value);
+        FREE(current);
+        current = next;
+    }
+    list->head = list->tail = NULL;
+    list->len = 0;
 }
 
-//创建一个队列，并将队列放入管理队列中
-list * list_create(char * list_name)
+/* Free the whole list.
+ *
+ * This function can't fail. */
+void listRelease(list *list)
 {
-	list * list_p = MALLOC(sizeof(list));
-	memset(list_p , 0 , sizeof(list));
-//	pthread_spin_lock(l_m.spin_lock);
-//	list_p->list_id = l_m.list_id_base++;
-//	pthread_spin_unlock(l_m.spin_lock);
-	list_p->list_name = strdup(list_name);   //可以重名
-	pthread_spin_init(&list_p->spin_lock, PTHREAD_PROCESS_PRIVATE);
-	list_manage_add(list_p);
-	return list_p;
+    listEmpty(list);
+    FREE(list);
 }
-//销毁一个队列，并将这个队列移除管理队列
-int list_destory(list * li)
-{
-	list_node * curr = NULL;
-	list_node * temp = NULL;
 
-	curr = li->head;
-	while (curr != NULL)
-	{
-		temp = curr;
-		curr = curr->next;
-		FREE(temp->data);
-		FREE(temp);
-	}
-	li->count = 0;
-	list_manage_del(li);
-	li = NULL;
-	return RETURN_OK;
-}
-//向一个队列中的头部插入数据
-int list_add_to_head(list * li , list_node * node)
+/* Add a new node to the list, to head, containing the specified 'value'
+ * pointer as value.
+ *
+ * On error, NULL is returned and no operation is performed (i.e. the
+ * list remains unaltered).
+ * On success the 'list' pointer you pass to the function is returned. */
+list *listAddNodeToHead(list *list, void *value)
 {
-	node->next = NULL;
-	node->prev = NULL;
-	pthread_spin_lock(&li->spin_lock);
-	node->next = li->head;
-	if(li->head != NULL)
-		li->head->prev = node;
-	li->head = node;
-	if (li->count++ == 0)
-		li->tail = node;
-	pthread_spin_unlock(&li->spin_lock);
-	return 0;
+    listNode *node;
+
+    if ((node = MALLOC(sizeof(*node))) == NULL)
+        return NULL;
+    node->value = value;
+    if (list->len == 0) {
+        list->head = list->tail = node;
+        node->prev = node->next = NULL;
+    } else {
+        node->prev = NULL;
+        node->next = list->head;
+        list->head->prev = node;
+        list->head = node;
+    }
+    list->len++;
+    return list;
 }
-//向一个队列中的尾部插入数据
-int list_add_to_tail(list * li , list_node * node)
+
+/* Add a new node to the list, to tail, containing the specified 'value'
+ * pointer as value.
+ *
+ * On error, NULL is returned and no operation is performed (i.e. the
+ * list remains unaltered).
+ * On success the 'list' pointer you pass to the function is returned. */
+list *listAddNodeToTail(list *list, void *value)
 {
-	node->next = NULL;
-	node->prev = NULL;
-	pthread_spin_lock(&li->spin_lock);
-	if(li->tail != NULL)
-		li->tail->next = node;
-	node->prev = li->tail;
-	li->tail = node;
-	if (li->count++ == 0)
-		li->head = node;
-	pthread_spin_unlock(&li->spin_lock);
-	return 0;
+    listNode *node;
+
+    if ((node = MALLOC(sizeof(*node))) == NULL)
+        return NULL;
+    node->value = value;
+    if (list->len == 0) {
+        list->head = list->tail = node;
+        node->prev = node->next = NULL;
+    } else {
+        node->prev = list->tail;
+        node->next = NULL;
+        list->tail->next = node;
+        list->tail = node;
+    }
+    list->len++;
+    return list;
 }
-//从一个队列的头部弹出数据
-list_node * list_pop_from_head(list * li)
+ //再次封装，从队头弹出一个 node，返回值为node的value
+void * listPopNodeFromHead(list * list)
 {
-	list_node * temp = NULL;
-	pthread_spin_lock(&li->spin_lock);
-	if (li->count == 0)
-	{
-		pthread_spin_unlock(&li->spin_lock);
+	listNode * node = listFirst(list);
+	if (node == NULL)
 		return NULL;
-	}
-	temp = li->head;
-	li->head = li->head->next;
-	li->head->prev = NULL;
-	if (li->count-- == 1)
-		li->tail = NULL;
-	pthread_spin_unlock(&li->spin_lock);
-	temp->next = NULL;
-	temp->prev = NULL;
-	return temp;
+	void * retVal = node->value;
+	listDelNode(list, node);
+	return retVal;
 }
-//从一个队列的尾部弹出数据
-list_node * list_pop_from_tail(list * li)
+//再次封装，从队尾弹出一个 node，返回值为node的value
+void * listPopNodeFromTail(list * list)
 {
-	list_node * temp = NULL;
-	pthread_spin_lock(&li->spin_lock);
-	if (li->count == 0)
-	{
-		pthread_spin_unlock(&li->spin_lock);
-		return NULL;
-	}
-	temp = li->tail;
-	li->tail = li->tail->prev;
-	if(li->tail != NULL)
-		li->tail->next = NULL;
-	if (li->count-- == 1)
-	{
-		li->head = NULL;
-		li->tail = NULL;
-	}
-	pthread_spin_unlock(&li->spin_lock);
-	temp->next = NULL;
-	temp->prev = NULL;
-	return temp;
-}
- //遍历一个队列中所有节点
-list_node * list_next(list * li , bool restart_flag)
-{
-	list_node * temp = NULL;
-	pthread_spin_lock(&li->spin_lock);
-	if (li->count == 0)
-	{
-		pthread_spin_unlock(&li->spin_lock);
-		return NULL;
-	}
-	if (restart_flag == true)
-		li->curr = li->head;
-	temp = li->curr;
-	if (li->curr != NULL)
-		li->curr = li->curr->next;
-	pthread_spin_unlock(&li->spin_lock);
-	return temp;
+	listNode * node = listLast(list);
+	if (node == NULL)
+		return NULL; 
+	void * retVal = node->value;
+	listDelNode(list, node);
+	return retVal;
 }
 
+/* Insert a new node to the list old_node is position of insert ,after is insert front or after */
+list *listInsertNode(list *list, listNode *old_node, void *value, int after) {
+    listNode *node;
+
+    if ((node = MALLOC(sizeof(*node))) == NULL)
+        return NULL;
+    node->value = value;
+    if (after) {
+        node->prev = old_node;
+        node->next = old_node->next;
+        if (list->tail == old_node) {
+            list->tail = node;
+        }
+    } else {
+        node->next = old_node;
+        node->prev = old_node->prev;
+        if (list->head == old_node) {
+            list->head = node;
+        }
+    }
+    if (node->prev != NULL) {
+        node->prev->next = node;
+    }
+    if (node->next != NULL) {
+        node->next->prev = node;
+    }
+    list->len++;
+    return list;
+}
+
+/* Remove the specified node from the specified list.
+ * It's up to the caller to free the private value of the node.
+ *
+ * This function can't fail. */
+void listDelNode(list *list, listNode *node)
+{
+    if (node->prev)
+        node->prev->next = node->next;
+    else
+        list->head = node->next;
+    if (node->next)
+        node->next->prev = node->prev;
+    else
+        list->tail = node->prev;
+    if (list->free) list->free(node->value);//由于free没有定义，所以在这里这条语句是不执行的。数据malloc或者free由调用者负责。
+    FREE(node);
+    list->len--;
+}
+
+/* Returns a list iterator 'iter'. After the initialization every
+ * call to listNext() will return the next element of the list.
+ *
+ * This function can't fail. */
+listIter *listGetIterator(list *list, int direction)
+{
+    listIter *iter;
+
+    if ((iter = MALLOC(sizeof(*iter))) == NULL) return NULL;
+    if (direction == AL_START_HEAD)
+        iter->next = list->head;
+    else
+        iter->next = list->tail;
+    iter->direction = direction;
+    return iter;
+}
+
+/* Release the iterator memory */
+void listReleaseIterator(listIter *iter) {
+    FREE(iter);
+}
+
+/* Create an iterator in the list private iterator structure */
+void listRewind(list *list, listIter *li) {
+    li->next = list->head;
+    li->direction = AL_START_HEAD;
+}
+
+void listRewindTail(list *list, listIter *li) {
+    li->next = list->tail;
+    li->direction = AL_START_TAIL;
+}
+
+/* Return the next element of an iterator.
+ * It's valid to remove the currently returned element using
+ * listDelNode(), but not to remove other elements.
+ *
+ * The function returns a pointer to the next element of the list,
+ * or NULL if there are no more elements, so the classical usage patter
+ * is:
+ *
+ * iter = listGetIterator(list,<direction>);
+ * while ((node = listNext(iter)) != NULL) {
+ *     doSomethingWith(listNodeValue(node));
+ * }
+ *
+ * */
+listNode *listNext(listIter *iter)
+{
+    listNode *current = iter->next;
+
+    if (current != NULL) {
+        if (iter->direction == AL_START_HEAD)
+            iter->next = current->next;
+        else
+            iter->next = current->prev;
+    }
+    return current;
+}
+
+/* Duplicate the whole list. On out of memory NULL is returned.
+ * On success a copy of the original list is returned.
+ *
+ * The 'Dup' method set with listSetDupMethod() function is used
+ * to copy the node value. Otherwise the same pointer value of
+ * the original node is used as value of the copied node.
+ *
+ * The original list both on success or error is never modified. */
+list *listDup(list *orig)
+{
+    list *copy;
+    listIter iter;
+    listNode *node;
+
+    if ((copy = listCreate()) == NULL)
+        return NULL;
+    copy->dup = orig->dup;
+    copy->free = orig->free;
+    copy->match = orig->match;
+    listRewind(orig, &iter);
+    while((node = listNext(&iter)) != NULL) {
+        void *value;
+
+        if (copy->dup) {
+            value = copy->dup(node->value);
+            if (value == NULL) {
+                listRelease(copy);
+                return NULL;
+            }
+        } else
+            value = node->value;
+        if (listAddNodeToTail(copy, value) == NULL) {
+            listRelease(copy);
+            return NULL;
+        }
+    }
+    return copy;
+}
+
+/* Search the list for a node matching a given key.
+ * The match is performed using the 'match' method
+ * set with listSetMatchMethod(). If no 'match' method
+ * is set, the 'value' pointer of every node is directly
+ * compared with the 'key' pointer.
+ *
+ * On success the first matching node pointer is returned
+ * (search starts from head). If no matching node exists
+ * NULL is returned. */
+listNode *listSearchKey(list *list, void *key)
+{
+    listIter iter;
+    listNode *node;
+
+    listRewind(list, &iter);
+    while((node = listNext(&iter)) != NULL) {
+        if (list->match) {
+            if (list->match(node->value, key)) {
+                return node;
+            }
+        } else {
+            if (key == node->value) {
+                return node;
+            }
+        }
+    }
+    return NULL;
+}
+
+/* Return the element at the specified zero-based index
+ * where 0 is the head, 1 is the element next to head
+ * and so on. Negative integers are used in order to count
+ * from the tail, -1 is the last element, -2 the penultimate
+ * and so on. If the index is out of range NULL is returned. */
+listNode *listIndex(list *list, long index) {
+    listNode *n;
+
+    if (index < 0) {
+        index = (-index)-1;
+        n = list->tail;
+        while(index-- && n) n = n->prev;
+    } else {
+        n = list->head;
+        while(index-- && n) n = n->next;
+    }
+    return n;
+}
+
+/* Rotate the list removing the tail node and inserting it to the head. */
+void listRotate(list *list) {
+    listNode *tail = list->tail;
+
+    if (listLength(list) <= 1) return;
+
+    /* Detach current tail */
+    list->tail = tail->prev;
+    list->tail->next = NULL;
+    /* Move it as head */
+    list->head->prev = tail;
+    tail->prev = NULL;
+    tail->next = list->head;
+    list->head = tail;
+}
+
+/* Add all the elements of the list 'o' at the end of the
+ * list 'l'. The list 'other' remains empty but otherwise valid. */
+void listJoin(list *l, list *o) {
+    if (o->head)
+        o->head->prev = l->tail;
+
+    if (l->tail)
+        l->tail->next = o->head;
+    else
+        l->head = o->head;
+
+    l->tail = o->tail;
+    l->len += o->len;
+
+    /* Setup other as an empty list. */
+    o->head = o->tail = NULL;
+    o->len = 0;
+}

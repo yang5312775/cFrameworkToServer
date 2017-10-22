@@ -20,8 +20,8 @@ void * MALLOC(unsigned int size);
 //回收内存
 int FREE(void * buffer);
 //内存池销毁
-int MALLOC_UNINIT(void);
+int memoryPoolUnInit(void);
 //内存池状态打印
-int MALLOC_PRINT(void);
+int memoryPoolPrint(void);
 
 #endif

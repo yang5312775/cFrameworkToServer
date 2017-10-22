@@ -19,11 +19,11 @@ void test_dict(void) {
 	dict * d = dictCreateEx();
 	dictEntry * entry = NULL;
 	assert(d != NULL);
-	dictAdd(d , "abc" , "hahahaha");
-	dictAdd(d, "abcd", "qwer");
-	dictAdd(d, "abce", "asdf");
-	dictAdd(d, "abcf", "zxcv");
-	dictAdd(d, "abcg", "yuio");
+	dictAdd(d , strdup("abc") , strdup("hahahaha"));
+	dictAdd(d, strdup("abcd"), strdup("qwer"));
+	dictAdd(d, strdup("abce"), strdup("asdf"));
+	dictAdd(d, strdup("abcf"), strdup("zxcv"));
+	dictAdd(d, strdup("abcg"), strdup("yuio"));
 	entry = dictFind(d , "abc");
 
 	dictIterator * iter = NULL;
@@ -33,6 +33,8 @@ void test_dict(void) {
 	{
 		entry = dictNext(iter);
 	}
+	dictRelease(d);
+
 	printf("end!!\n");
 	end_benchmark("Inserting");
 

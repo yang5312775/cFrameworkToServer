@@ -175,6 +175,7 @@
     <ClCompile Include="utils\config.c" />
     <ClCompile Include="utils\en_de_crypt.c" />
     <ClCompile Include="utils\log.c" />
+    <ClCompile Include="utils\log_new.c" />
     <ClCompile Include="utils\memory_pool.c" />
     <ClCompile Include="utils\mysql_basic.c" />
     <ClCompile Include="utils\mysql_connection_pool.c" />
@@ -196,6 +197,7 @@
     <ClInclude Include="utils\define.h" />
     <ClInclude Include="utils\en_de_crypt.h" />
     <ClInclude Include="utils\log.h" />
+    <ClInclude Include="utils\log_new.h" />
     <ClInclude Include="utils\memory_pool.h" />
     <ClInclude Include="utils\mysql_basic.h" />
     <ClInclude Include="utils\mysql_connection_pool.h" />

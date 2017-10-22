@@ -43,19 +43,19 @@ void test_memory_pool(void) {
 	MALLOC(180);
 	MALLOC(700);
 	MALLOC(900);
-	MALLOC_PRINT();
+	memoryPoolPrint();
 	printf("press any key to free memory pool\n");
 	getchar();
 	FREE(node5);
 	FREE(node4);
 	FREE(node3);
-	MALLOC_PRINT();
+	memoryPoolPrint();
 	FREE(node2);
 	FREE(node1);
-	MALLOC_PRINT();
+	memoryPoolPrint();
 	printf("press any key to destory memory pool\n");
 	getchar();
-	MALLOC_UNINIT();
+	memoryPoolUnInit();
 	printf("press any key to quit\n");
 	getchar();
 }

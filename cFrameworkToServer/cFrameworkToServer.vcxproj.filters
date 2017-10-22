@@ -50,6 +50,7 @@
     <ClCompile Include="utils\basic_struct\rtree.c" />
     <ClCompile Include="test\test_dict.c" />
     <ClCompile Include="utils\basic_struct\siphash.c" />
+    <ClCompile Include="utils\log_new.c" />
   </ItemGroup>
   <ItemGroup>
     <None Include="conf\config.ini">
@@ -79,6 +80,7 @@
     <ClInclude Include="utils\basic_struct\list.h" />
     <ClInclude Include="utils\basic_struct\rtree.h" />
     <ClInclude Include="test\test_thread_pool.c" />
+    <ClInclude Include="utils\log_new.h" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="third\openssl\lib\win32\libeay32.lib" />

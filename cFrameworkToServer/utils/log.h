@@ -1,3 +1,5 @@
+#ifndef LOG_H
+#define LOG_H
 #include<basic.h>
 
 
@@ -6,3 +8,4 @@ int initLog(char * log_directory);
 int closeLog(void);
 int LOG(const char *format, ...);
 int DEBUG(const char *format, ...);
+#endif

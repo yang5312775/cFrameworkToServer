@@ -2,7 +2,7 @@
 
 dict * dict_config = NULL;
 
-int loadConfig(char * configFilePath)
+int configerInit(char * configFilePath)
 {
 	FILE * confFile = NULL;
 	char buff_line[512];
@@ -34,10 +34,16 @@ int loadConfig(char * configFilePath)
 				rightArg[i] ='\0';
 			i--;
 		}
+		//key与value均由dict之外malloc
 		dictAdd(dict_config, Trim(leftArg) , Trim(rightArg));
 	}
 	fclose(confFile);
 	return RETURN_OK;
+}
+
+void configerUnInit(void)
+{
+	dictRelease(dict_config);
 }
 
 char * getConfig(char * key)
@@ -53,4 +59,21 @@ int setConfig(char * key, char * value)
 int addConfig(char * key, char * value)
 {
 	return dictAdd(dict_config, key, value);
+}
+
+int print_config(void)
+{
+	dictEntry * entry = NULL;
+	dictIterator * iter = NULL;
+	iter = dictGetIterator(dict_config);
+	entry = 1;
+	log_print(L_INFO, "--------------------start print config table-------------------------\n");
+	while (entry != NULL)
+	{
+		entry = dictNext(iter);
+		if (entry != NULL)
+			log_print(L_INFO , "[%s]:[%s]\n" , entry->key , entry->v.val);
+	}
+	log_print(L_INFO, "---------------------end print config table--------------------------\n");
+	return 0;
 }

@@ -1,75 +1,67 @@
-﻿#ifndef _H_SIMPLEC_LIST
-#define _H_SIMPLEC_LIST
+﻿#ifndef __ADLIST_H__
+#define __ADLIST_H__
 #include<basic.h>
+/* Node, List, and Iterator are the only data structures used currently. */
 
-enum list_flag {
+typedef struct listNode {
+    struct listNode *prev;
+    struct listNode *next;
+    void *value;
+} listNode;
 
-	err_list_base = ERR_LIST_BASE,
-	err_list_invalid_input_argument,   //-99
-	err_manage_list_del_query_fail,   //-99
-	err_manage_list_del_have_children_yet,   //-99
-};
+typedef struct listIter {
+    listNode *next;
+    int direction;
+} listIter;
 
-typedef struct list_node list_node;
-struct list_node {
-	char * data;
-	list_node * next;
-	list_node * prev;
-};
+typedef struct list {
+    listNode *head;
+    listNode *tail;
+    void *(*dup)(void *ptr);
+    void (*free)(void *ptr);
+    int (*match)(void *ptr, void *key);
+    unsigned long len;
+} list;
 
-typedef struct list list;
-struct list {
-	char * list_name;
-//	int list_id;
-	int	count;
-	pthread_spinlock_t  spin_lock;           
-	list_node * head;
-	list_node * tail;
-	list_node * curr;
-	list * next;
-};
+/* Functions implemented as macros */
+#define listLength(l) ((l)->len)
+#define listFirst(l) ((l)->head)
+#define listLast(l) ((l)->tail)
+#define listPrevNode(n) ((n)->prev)
+#define listNextNode(n) ((n)->next)
+#define listNodeValue(n) ((n)->value)
 
-typedef struct {
-	int count;
-//	int list_id_base;
-	pthread_spinlock_t  spin_lock;
-	list * head;
-}list_manage;
+#define listSetDupMethod(l,m) ((l)->dup = (m))
+#define listSetFreeMethod(l,m) ((l)->free = (m))
+#define listSetMatchMethod(l,m) ((l)->match = (m))
 
-//队列管理启动
-int list_manage_init(void);
+#define listGetDupMethod(l) ((l)->dup)
+#define listGetFree(l) ((l)->free)
+#define listGetMatchMethod(l) ((l)->match)
 
-//向队列管理中插入新队列
-int list_manage_add(list * li);
+/* Prototypes */
+list *listCreate(void);
+void listRelease(list *list);
+void listEmpty(list *list);
+list *listAddNodeToHead(list *list, void *value);
+list *listAddNodeToTail(list *list, void *value);
+void * listPopNodeFromHead(list * list);
+void * listPopNodeFromTail(list * list);
+list *listInsertNode(list *list, listNode *old_node, void *value, int after);
+void listDelNode(list *list, listNode *node);
+listIter *listGetIterator(list *list, int direction);
+listNode *listNext(listIter *iter);
+void listReleaseIterator(listIter *iter);
+list *listDup(list *orig);
+listNode *listSearchKey(list *list, void *key);
+listNode *listIndex(list *list, long index);
+void listRewind(list *list, listIter *li);
+void listRewindTail(list *list, listIter *li);
+void listRotate(list *list);
+void listJoin(list *l, list *o);
 
+/* Directions for iterators */
+#define AL_START_HEAD 0
+#define AL_START_TAIL 1
 
-//向队列管理中删除队列
-int list_manage_del(list * li);
-
-//队列管理关闭
-int list_manage_uninit(void);
-
-//创建一个队列，并将队列放入管理队列中
-list * list_create(char * list_name);
-
-//销毁一个队列，并将这个队列移除管理队列
-int list_destory(list * li);
-
-//向一个队列中的头部插入数据
-int list_add_to_head(list * li, list_node * node);
-
-//向一个队列中的尾部插入数据
-int list_add_to_tail(list * li, list_node * node);
-
-//从一个队列的头部弹出数据
-list_node * list_pop_from_head(list * li);
-
-//从一个队列的尾部弹出数据
-list_node * list_pop_from_tail(list * li);
-
-//遍历一个队列中所有节点
-list_node * list_next(list * li, bool restart_flag);
-
-
-
-#endif
+#endif /* __ADLIST_H__ */

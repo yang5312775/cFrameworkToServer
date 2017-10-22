@@ -8,18 +8,20 @@ int memoryPoolInit(char * colume_no_str , char * block_len_str ,char * block_cou
 {
 	int ret = -1;
 	int colume_no = atoi(colume_no_str);
+	char * block_len_str_t = strdup(block_len_str);
+	char * block_count_str_t = strdup(block_count_str);
 	unsigned int * block_len = malloc(sizeof(unsigned int) * colume_no);
 	unsigned int * block_count = malloc(sizeof(unsigned int) * colume_no);
-	*strchr(block_len_str++, ']') = '\0';
-	*strchr(block_count_str++, ']') = '\0';
+	*strchr(block_len_str_t++, ']') = '\0';
+	*strchr(block_count_str_t++, ']') = '\0';
 	char* delim = ",";
-	char* p = strtok(block_len_str, delim);
+	char* p = strtok(block_len_str_t, delim);
 	for (int i = 0; i < colume_no; i++)
 	{
 		block_len[i] = atoi(p);
 		p = strtok(NULL, delim);
 	}
-	p = strtok(block_count_str, delim);
+	p = strtok(block_count_str_t, delim);
 	for (int i = 0; i < colume_no; i++)
 	{
 		block_count[i] = atoi(p);
@@ -28,6 +30,9 @@ int memoryPoolInit(char * colume_no_str , char * block_len_str ,char * block_cou
 	ret = MALLOC_INIT(colume_no , block_len , block_count);
 	free(block_len);
 	free(block_count);
+	free(--block_len_str_t);
+	free(--block_count_str_t);
+	return 0;
 }
 
 
@@ -108,7 +113,7 @@ int FREE(void * buffer)
 	return RETURN_OK;
 }
 
-int MALLOC_UNINIT(void)
+int memoryPoolUnInit(void)
 {
 	if (b_p == NULL)
 		return ERR_MEMORY_POOL_NOT_INIT;
@@ -123,7 +128,7 @@ int MALLOC_UNINIT(void)
 	return RETURN_OK;
 }
 
-int MALLOC_PRINT(void)
+int memoryPoolPrint(void)
 {
 	if (b_p == NULL)
 	{

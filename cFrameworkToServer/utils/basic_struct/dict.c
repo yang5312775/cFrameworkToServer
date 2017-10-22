@@ -70,6 +70,10 @@ void freeCallback(void *privdata, void *val) {
 
 	free(val);
 }
+void * mallocCallback(void *privdata, void *val) {
+	DICT_NOTUSED(privdata);
+	return strdup(val);
+}
 
 dictType BenchmarkDictType = {
 	hashCallback,
@@ -77,7 +81,7 @@ dictType BenchmarkDictType = {
 	NULL,
 	compareCallback,
 	freeCallback,
-	NULL
+	freeCallback
 };
 /* Create a new hash table ex*/
 dict *dictCreateEx(void)

@@ -36,6 +36,8 @@
 #include"memory_pool.h"
 #include"random.h"
 #include"basic_struct\dict.h"
+#include"basic_struct\list.h"
+#include"log_new.h"
 //linux include file
 #ifdef __GNUC__
 #include <unistd.h>
