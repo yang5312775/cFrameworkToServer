@@ -20,11 +20,16 @@ typedef struct {
 	char password[32];
 	char databaseName[32];
 	int connectionTimeout;
+	int connectCount;
 }sqlConfig;
 
-int mysqlConnectionPool_init(char * mysqlIP, char * mysqlPort, char * mysqlAccount, char * mysqlPassword, char * databaseName, char * mysqlConnectionTimeout);
-int mysqlConnectionPool_close(void);
+int mysqlConnectionPoolInit(char * mysqlIP, char * mysqlPort, char * mysqlAccount, char * mysqlPassword, char * databaseName, char * mysqlConnectionTimeout, char * connectCount);
+
+int mysqlConnectionPoolUnInit(void);
+
 MYSQL * mysqlConnectionPool_GetOneConn(void);
+
 int mysqlConnectionPool_FreeOneConn(MYSQL * conn);
+
 int testConnection(MYSQL* conn);
 #endif

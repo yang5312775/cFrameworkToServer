@@ -42,6 +42,22 @@ int main(int argc, const char * argv[])
 	log_print(L_INFO, "\n\nSYSTEM[%s]  Version [%s]  Build time[%s %s]\n\n" ,SYS_NAME ,VERSION , __DATE__, __TIME__);
 	//向日志文件输出配置信息
 	print_config();
+	if (strcmp("1", getConfig("MysqlEnable")) == 0)
+	{
+		ret = mysqlConnectionPoolInit(getConfig("MysqlIP"), \
+			getConfig("MysqlPort"),\
+			getConfig("MysqlAccount"), \
+			getConfig("MysqlPassword"), \
+			getConfig("DatabaseName"),\
+			getConfig("MysqlConnectionTimeout"),\
+			getConfig("MysqlConnectionPoolMaxCount"));
+		if (ret != RETURN_OK)
+		{
+			printf("mysqlConnectionPoolInit fail , errcode [%d]\n", ret);
+			goto exit;
+		}
+	}
+	log_print(L_INFO, "[%s] mysql connection create success, mysql connection pool init success!!\n", getConfig("MysqlConnectionPoolMaxCount"));
 
 
 
@@ -105,10 +121,14 @@ int main(int argc, const char * argv[])
 	TIME_PRINT(EXTERN_RUN(test_dict););
 exit:	getchar();
 
-
+	//数据库连接模块池销毁
+	mysqlConnectionPoolUnInit();
+	log_print(L_INFO, "mysql connection pool uninit success\n");
 	//配置参数模块销毁
 	configerUnInit();
+	log_print(L_INFO, "log module uninit success\n");
 	//log系统销毁 为了保证log_print正常使用，一般最后调用。
+	log_print(L_INFO, "log module uninit start!\n");
 	log_uninit();
 	//内存池销毁
 	memoryPoolUnInit();

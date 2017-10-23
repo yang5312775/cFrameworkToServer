@@ -38,6 +38,7 @@
 #include"basic_struct\dict.h"
 #include"basic_struct\list.h"
 #include"log_new.h"
+#include"mysql_connection_pool.h"
 //linux include file
 #ifdef __GNUC__
 #include <unistd.h>

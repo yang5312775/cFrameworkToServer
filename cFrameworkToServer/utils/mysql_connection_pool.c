@@ -1,12 +1,11 @@
 #include"mysql_connection_pool.h"
 
-#define MAX_MYSQL_CONNECTION 100
-
-
-
 sqlConfig sqlC;
-MysqlBlock mysqlBlock[MAX_MYSQL_CONNECTION];
+MysqlBlock *mysqlBlock = NULL;
 pthread_mutex_t mutexMysqlPool;
+pthread_t g_mysql_conn_pid;
+int g_mysql_conn_enable = 0;
+
 void* check_connection(void* Param);
 
 int testConnection(MYSQL* conn)
@@ -32,7 +31,7 @@ int testConnection(MYSQL* conn)
 	return 0;
 }
 
-int mysqlConnectionPool_init(char * mysqlIP , char * mysqlPort , char * mysqlAccount , char * mysqlPassword , char * databaseName , char * mysqlConnectionTimeout)
+int mysqlConnectionPoolInit(char * mysqlIP , char * mysqlPort , char * mysqlAccount , char * mysqlPassword , char * databaseName , char * mysqlConnectionTimeout , char * connectCount)
 {
 	int i = 0;
 	memset(&sqlC , 0 , sizeof(sqlConfig));
@@ -42,75 +41,91 @@ int mysqlConnectionPool_init(char * mysqlIP , char * mysqlPort , char * mysqlAcc
 	strcpy(sqlC.databaseName, databaseName);
 	sqlC.port = atoi(mysqlPort);
 	sqlC.connectionTimeout = atoi(mysqlConnectionTimeout);
+	sqlC.connectCount = atoi(connectCount);
+
+	mysqlBlock = (MysqlBlock *)MALLOC(sizeof(MysqlBlock) * sqlC.connectCount);
 
 	pthread_mutex_init(&mutexMysqlPool, NULL);
-	for (i = 0; i < MAX_MYSQL_CONNECTION; i++)
+	for (i = 0; i < sqlC.connectCount; i++)
 	{
-		memset(&mysqlBlock[i], 0, sizeof(MysqlBlock));
 		mysql_init(&(mysqlBlock[i].sql));
 		mysqlBlock[i].conn = mysql_real_connect(&(mysqlBlock[i].sql), sqlC.ip, sqlC.account, sqlC.password, sqlC.databaseName, sqlC.port, 0, 0);
 		if (mysqlBlock[i].conn == NULL)
 		{
-			LOG("connection pool  init connection fail errcode:%s\n", mysql_error(&(mysqlBlock[i].sql)));
+			log_print(L_ERROR , "connection pool  init connection fail errcode:%s\n", mysql_error(&(mysqlBlock[i].sql)));
 			return ERR_DATABASE_CONNECT_FAIL;
 		}
 		mysqlBlock[i].lastUseTime = time(NULL);
 	}
-	LOG("[%d] connection create success!!\n", MAX_MYSQL_CONNECTION);
-	pthread_t pid;
 	pthread_attr_t attr;
 	pthread_attr_init(&attr);
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-	pthread_create(&pid, &attr, check_connection, NULL);
+	pthread_create(&g_mysql_conn_pid, &attr, check_connection, NULL);
 	pthread_attr_destroy(&attr);
+	g_mysql_conn_enable = 1;
 	return 0;
 }
+
+int mysqlConnectionPoolUnInit(void)
+{
+
+	for (int i = 0; i < sqlC.connectCount; i++)
+	{
+		mysql_close(mysqlBlock[i].conn);
+	}
+	FREE(mysqlBlock);
+	mysqlBlock = NULL;
+	pthread_cancel(g_mysql_conn_pid);
+	SLEEP(1);
+	pthread_mutex_lock(&mutexMysqlPool);
+	pthread_mutex_destroy(&mutexMysqlPool);
+	g_mysql_conn_enable = 0;
+	return 0;
+}
+
 void* check_connection(void* Param)
 {
 	int i = 0;
-	LOG("mysql connection pool check thread startup success!!\n");
+	int count = 0;
+	log_print(L_INFO , "mysql connection pool check thread startup success!!\n");
 	while (1)
 	{
-		for (i = 0; i < MAX_MYSQL_CONNECTION; i++)
-		{
-			pthread_mutex_lock(&mutexMysqlPool);
-			if (mysqlBlock[i].useFlag == 0 && ((time(NULL) - mysqlBlock[i].lastUseTime) > sqlC.connectionTimeout || testConnection(mysqlBlock[i].conn) != 0))
+		count++;
+		if(count %(60*10) == 0)//累计600次也就是大约600秒进入for循环一次
+			for (i = 0; i < sqlC.connectCount; i++)
 			{
+				pthread_mutex_lock(&mutexMysqlPool);
+				if (mysqlBlock[i].useFlag == 0 && ((time(NULL) - mysqlBlock[i].lastUseTime) > sqlC.connectionTimeout || testConnection(mysqlBlock[i].conn) != 0))
+				{
 
-				LOG("in check_connection thread , no.[%d] connection timeout ,need reconnect\n", i);
-				mysql_close(mysqlBlock[i].conn);
-				memset(&mysqlBlock[i], 0, sizeof(MysqlBlock));
-				mysql_init(&(mysqlBlock[i].sql));
-				mysqlBlock[i].conn = mysql_real_connect(&(mysqlBlock[i].sql), sqlC.ip, sqlC.account, sqlC.password, sqlC.databaseName, sqlC.port, 0, 0);
-				if (mysqlBlock[i].conn == NULL)
-					LOG("warning !! in check_connection thread ,init connection fail errcode:%s\n", mysql_error(&(mysqlBlock[i].sql)));
-				mysqlBlock[i].lastUseTime = time(NULL);
+					log_print(L_WARNING  ,"in check_connection thread , no.[%d] connection timeout ,need reconnect\n", i);
+					mysql_close(mysqlBlock[i].conn);
+					memset(&mysqlBlock[i], 0, sizeof(MysqlBlock));
+					mysql_init(&(mysqlBlock[i].sql));
+					mysqlBlock[i].conn = mysql_real_connect(&(mysqlBlock[i].sql), sqlC.ip, sqlC.account, sqlC.password, sqlC.databaseName, sqlC.port, 0, 0);
+					if (mysqlBlock[i].conn == NULL)
+						log_print(L_WARNING  , "warning !! in check_connection thread ,init connection fail errcode:%s\n", mysql_error(&(mysqlBlock[i].sql)));
+					mysqlBlock[i].lastUseTime = time(NULL);
+				}
+				pthread_mutex_unlock(&mutexMysqlPool);
 			}
-			pthread_mutex_unlock(&mutexMysqlPool);
-		}
-		SLEEP(600);//十分钟刷新一次
+		SLEEP(1);
+		pthread_testcancel();
 	}
-}
-
-int mysqlConnectionPool_close(void)
-{
-
-	int i = 0;
-	for (i = 0; i < MAX_MYSQL_CONNECTION; i++)
-	{
-		mysql_close(mysqlBlock[i].conn);
-		memset(&mysqlBlock[i], 0, sizeof(MysqlBlock));
-	}
-	return 0;
 }
 
 MYSQL * mysqlConnectionPool_GetOneConn(void)
 {
+	if (g_mysql_conn_enable == 0)
+	{
+		log_print(L_WARNING, "connection pool not init yet！\n");
+		return NULL;
+	}
 	MYSQL * ret = NULL;
 	int i = 0;
 	while (1)
 	{
-		for (i = 0; i < MAX_MYSQL_CONNECTION; i++)
+		for (i = 0; i < sqlC.connectCount; i++)
 		{
 			pthread_mutex_lock(&mutexMysqlPool);
 			if (mysqlBlock[i].useFlag == 0)
@@ -123,14 +138,20 @@ MYSQL * mysqlConnectionPool_GetOneConn(void)
 			}
 			pthread_mutex_unlock(&mutexMysqlPool);
 		}
+		log_print(L_WARNING , "all connention be used , wait!!!!\n");
 	}
 }
 
 int mysqlConnectionPool_FreeOneConn(MYSQL * conn)
 {
+	if (g_mysql_conn_enable == 0)
+	{
+		log_print(L_WARNING, "connection pool not init yet！\n");
+		return -1;
+	}
 	int ret = -22;
 	int i = 0;
-	for (i = 0; i < MAX_MYSQL_CONNECTION; i++)
+	for (i = 0; i < sqlC.connectCount; i++)
 	{
 		pthread_mutex_lock(&mutexMysqlPool);
 		if (mysqlBlock[i].conn == conn)
