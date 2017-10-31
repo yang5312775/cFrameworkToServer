@@ -14,6 +14,7 @@
 #define	ERR_LOG_LEVEL_INVALID		-8
 #define	ERR_LOG_SAVE_DAYS_INVALID	-9
 #define ERR_LOG_NOT_INIT			-10
+#define ERR_CREATE_EVENTLOOP_FAIL	-11
 #define ERR_LIST_BASE	-100
 
 #endif

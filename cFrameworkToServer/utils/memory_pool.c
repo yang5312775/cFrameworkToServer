@@ -77,10 +77,12 @@ a:		buffer = malloc(size);
 	{
 		if (size > b_p[i].block_len)
 			continue;
+//		if (size > 8 && size <= 16)
+//			printf(".");
 		pthread_spin_lock(&memory_spin_lock);
 		if (b_p[i].remain_count == 0)
 		{
-			printf("warning!!!!  size[%d]pool use up!!!! \n", b_p[i].block_len);
+ 			printf("warning!!!!  size[%d]pool use up!!!! \n", b_p[i].block_len);
 			pthread_spin_unlock(&memory_spin_lock);
 			continue;
 		}
@@ -101,6 +103,8 @@ int FREE(void * buffer)
 	{
 		if (buffer > b_p[i].addr_start && buffer < b_p[i].addr_end)
 		{
+//			if(b_p[i].block_len == 16)
+//				printf("*");
 			pthread_spin_lock(&memory_spin_lock);
 			b_p[i].header[b_p[i].remain_count++] = buffer;
 			pthread_spin_unlock(&memory_spin_lock);

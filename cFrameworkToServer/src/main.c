@@ -2,6 +2,12 @@
 
 #define SYS_NAME "xxxxxxxxxxxxxxxxxxx"
 #define VERSION	"0.1"
+
+#define TEST
+
+
+
+
 int main(int argc, const char * argv[])
 {
 //	printf("%s\n" , START_SLOGAN);
@@ -29,6 +35,13 @@ int main(int argc, const char * argv[])
 	if (ret != RETURN_OK)
 	{
 		printf("memory pool init fail , errcode [%d]\n", ret);
+		goto exit;
+	}
+	//启动线程池
+	ret = threadpool_create(atoi(getConfig("ThreadpoolCount")), 0);
+	if (ret != 0)
+	{
+		printf("thread pool init fail , errcode [%d]\n", ret);
 		goto exit;
 	}
 	//log系统初始化，初始化成功后可用log_print进行输出
@@ -59,67 +72,23 @@ int main(int argc, const char * argv[])
 	}
 	log_print(L_INFO, "[%s] mysql connection create success, mysql connection pool init success!!\n", getConfig("MysqlConnectionPoolMaxCount"));
 
+	socket_server_start(NULL , atoi(getConfig("ServerPort")) , atoi(getConfig("BackLog")));   //block here!!!
 
 
 
-#if 0
-	//load config
-	ret = loadConfig(argv[1]);
-	if (ret != 0)
-	{
-		printf("load config file fail!! press any key to quit!!!\n");
-		getchar();
-		exit(0);
-	}
-	printf("config file load success.\n");
-
-	//init log
-	ret = initLog("aaaaaaaaaaaa");
-	if (ret != 0)
-	{
-		printf("logFile init fail ,quit !!!\n");
-		getchar();
-		return -1;
-	}
-
-	//	ret = mysqlConnectionPool_close();
-	LOG("load config success\n");
-	LOG("*****************************\n");
-	LOG("logPath:[%s]\n", serverConfig.logPath);
-	LOG("serverPort:[%s]\n", serverConfig.serverPort);
-	LOG("mysqlIP:[%s]\n", serverConfig.mysqlIP);
-	LOG("mysqlPort:[%s]\n", serverConfig.mysqlPort);
-	LOG("mysqlAccount:[%s]\n", serverConfig.mysqlAccount);
-	LOG("mysqlPassword:[%s]\n", serverConfig.mysqlPassword);
-	LOG("databaseName:[%s]\n", serverConfig.databaseName);
-	LOG("mysqlConnectionTimeout:[%d]seconds\n", serverConfig.mysqlConnectionTimeout);
-	LOG("authPushPoolCount:[%d]\n", serverConfig.authPushPoolCount);
-	LOG("authPushPoolCapacity:");
-	for (int i = 0; i< serverConfig.authPushPoolCount; i++)
-		LOG("[%d] ", serverConfig.authPushPoolCapacity[i]);
-	LOG("\nauthPushPoolRateX:");
-	for (int i = 0; i< serverConfig.authPushPoolCount; i++)
-		LOG("[%d] ", serverConfig.authPushPoolRateX[i]);
-	LOG("\nauthPushPoolBandwidth:[%d]kbps\n", serverConfig.authPushPoolBandwidth);
-	LOG("multicastIP:[%s]\n", serverConfig.multicastIP);
-	LOG("multicastPORT:[%s]\n", serverConfig.multicastPORT);
-	LOG("*****************************\n");
-	//init mysql
-	ret = mysqlConnectionPool_init(&serverConfig);
-	if (ret != 0)
-	{
-		LOG("mysql connection poll init fail\n");
-		getchar();
-	}
-	LOG("mysql connection poll init success\n");
 
 
-#endif
-
+#ifdef TEST
 //	TIME_PRINT(EXTERN_RUN(test_memory_pool););
 //	TIME_PRINT(EXTERN_RUN(test_list););
-	TIME_PRINT(EXTERN_RUN(test_dict););
+//	TIME_PRINT(EXTERN_RUN(test_pool_event););
+	
+	TIME_PRINT(EXTERN_RUN(test_threadpool););
+#endif
+
+
 exit:	getchar();
+
 
 	//数据库连接模块池销毁
 	mysqlConnectionPoolUnInit();
@@ -130,6 +99,8 @@ exit:	getchar();
 	//log系统销毁 为了保证log_print正常使用，一般最后调用。
 	log_print(L_INFO, "log module uninit start!\n");
 	log_uninit();
+	//线程池销毁
+	threadpool_destroy(atoi(getConfig("ThreadpoolQuitType")));
 	//内存池销毁
 	memoryPoolUnInit();
 	return 0;

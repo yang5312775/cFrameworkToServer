@@ -14,13 +14,13 @@ int testConnection(MYSQL* conn)
 	int state = mysql_query(conn, "select 1;");//执行SQL语句  
 	if (state != 0)
 	{
-		DEBUG("%s\n", mysql_error(conn));
+		log_print(L_ERROR ,"%s\n", mysql_error(conn));
 		return -1;
 	}
 	result = mysql_store_result(conn);//得到查询结果  
 	if (result == (MYSQL_RES *)NULL)
 	{
-		DEBUG("%s\n", mysql_error(conn));
+		log_print(L_ERROR ,"%s\n", mysql_error(conn));
 		return -1;
 	}
 	if (result != NULL)

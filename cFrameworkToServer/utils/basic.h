@@ -37,8 +37,11 @@
 #include"random.h"
 #include"basic_struct\dict.h"
 #include"basic_struct\list.h"
-#include"log_new.h"
 #include"mysql_connection_pool.h"
+#include"thread_pool.h"
+#include"event\ae.h"
+#include"socket_basic.h"
+#include"socket_server.h"
 //linux include file
 #ifdef __GNUC__
 #include <unistd.h>
@@ -52,6 +55,12 @@
 #include <sys/uio.h>
 #include <sys/select.h>
 #include <sys/resource.h>
+#include <sys/epoll.h>
+#include <port.h>
+#include <poll.h>
+#include <sys/time.h>
+#include <sys/event.h>
+
 //windows include file
 #elif _MSC_VER
 #include<windows.h>

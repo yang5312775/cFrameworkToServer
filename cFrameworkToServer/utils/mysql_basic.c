@@ -8,14 +8,14 @@ int query_db(const char *SQL, MYSQL *connection)//执行有返回数据集的SQL语句
 	int state = mysql_query(connection, SQL);//执行SQL语句  
 	if (state != 0)
 	{
-		DEBUG("%s\n", mysql_error(connection));
+		log_print(L_ERROR ,"%s\n", mysql_error(connection));
 		ret = -1;
 		goto end;//执行失败，返回-1  
 	}
 	result = mysql_store_result(connection);//得到查询结果  
 	if (result == (MYSQL_RES *)NULL)
 	{
-		DEBUG("%s\n", mysql_error(connection));
+		log_print(L_ERROR ,"%s\n", mysql_error(connection));
 		ret = -2;
 		goto end;//执行失败，返回-1  
 	}
@@ -33,11 +33,11 @@ int exec_db(const char *SQL, MYSQL *connection)//执行没有返回数据集的SQL语句
 	int state = mysql_query(connection, SQL);//执行SQL语句  
 	if (state != 0)
 	{
-		DEBUG("%s\n", mysql_error(connection));
+		log_print(L_ERROR ,"%s\n", mysql_error(connection));
 		return -1;
 	}
 	int count = mysql_affected_rows(connection);
-	//	DEBUG("query is ok, %u rows affected\n", count);
+	//	log_print("query is ok, %u rows affected\n", count);
 	return count;
 }
 //数据库查询有结果返回，返回result
@@ -48,13 +48,13 @@ MYSQL_RES * query_db_return_result(const char *SQL, MYSQL *connection)//执行有返
 	int state = mysql_query(connection, SQL);//执行SQL语句  
 	if (state != 0)
 	{
-		DEBUG("%s\n", mysql_error(connection));
+		log_print(L_ERROR ,"%s\n", mysql_error(connection));
 		return NULL;
 	}
 	result = mysql_store_result(connection);//得到查询结果  
 	if (result == (MYSQL_RES *)NULL)
 	{
-		DEBUG("%s\n", mysql_error(connection));
+		log_print(L_ERROR ,"%s\n", mysql_error(connection));
 	}
 	return result;
 }

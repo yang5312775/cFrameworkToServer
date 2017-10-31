@@ -21,6 +21,9 @@ int GetMD5Code(unsigned char * dataInput, int len, unsigned char * MD5);
 //获取SHA1值
 int GetSHA1Code(unsigned char * dataInput, int len, unsigned char * SHA1);
 
+//ROT13加解密
+char rot13_char(char c);
+
 //base64 加密
 int DBSBase64Encode(unsigned char *in_str, int in_len, char *out_str);
 
