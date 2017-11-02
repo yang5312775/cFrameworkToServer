@@ -2,27 +2,113 @@
 
 aeEventLoop  * g_ael = NULL;
 dict * socketserverDict = NULL;
-#define MAX_LINE 4096
 
-typedef struct{
-	int fd;
-	char buffer[MAX_LINE];
-	size_t buffer_used;
-	size_t n_written;
-	size_t write_upto;
-	char	kepp_alive;
-}fd_state;
+void stream_handle(void * data)
+{
+	real_data_node  * s_d_node = data;
+	printf("stream_handle\n");
+	memset(s_d_node->fd_s->buffer, 0, sizeof(s_d_node->fd_s->buffer));
+	strcpy(s_d_node->fd_s->buffer, "not support yet");
+	s_d_node->fd_s->n_written = strlen("not support yet");//test
+	free(s_d_node->data);
+	free(s_d_node);
+}
 
-typedef struct {
-	char * data;
-	int len;
-	fd_state * fd_s;
-}server_data_node;
+void json_handle(void * data)
+{
+	char errString[128];
+	memset(errString, 0, 128);
+	real_data_node  * s_d_node = data;
+	//	printf("json_handle\n");
+	cJSON *json = NULL;
+	json = cJSON_Parse(s_d_node->data);
+	if (json == NULL)
+	{
+		strcpy(errString, "bad request");
+		goto err;
+	}
 
+	cJSON *temp = cJSON_GetObjectItem(json, "route");
+	char * route = temp->valuestring;
+	//	printf("route  : %s\n" , temp->valuestring);
+	temp = cJSON_GetObjectItem(json, "prm");
+	char * prm = cJSON_Print(temp);
+	//	printf("prm :\n %s\n" , prm);
+	free(s_d_node->data);
+	s_d_node->data = prm;
+	s_d_node->len = strlen(prm);
+	route_fun * fun = get_function_route(route);
+	if (fun == NULL)
+	{
+		strcpy(errString, "unregist route");
+		goto err;
+	}
 
-list * socket_server_do = NULL;
-LIST * socket_server_write = NULL;
+	(get_function_route(route))(s_d_node);
 
+	memset(s_d_node->fd_s->buffer, 0, sizeof(s_d_node->fd_s->buffer));
+	memcpy(s_d_node->fd_s->buffer, s_d_node->data, s_d_node->len);
+	s_d_node->fd_s->n_written = s_d_node->len;
+	cJSON_Delete(json);
+	free(s_d_node->data);
+	free(s_d_node);
+	return;
+err:
+	memset(s_d_node->fd_s->buffer, 0, sizeof(s_d_node->fd_s->buffer));
+	strcpy(s_d_node->fd_s->buffer, errString);
+	s_d_node->fd_s->n_written = strlen(errString);//test
+	s_d_node->fd_s->kepp_alive = 0;
+	cJSON_Delete(json);
+	free(s_d_node->data);
+	free(s_d_node);
+}
+void undefined_handle(void * data)
+{
+	real_data_node  * s_d_node = data;
+	//	printf("undefined_handle\n");
+	memset(s_d_node->fd_s->buffer, 0, sizeof(s_d_node->fd_s->buffer));
+	strcpy(s_d_node->fd_s->buffer, "undefined request");
+	s_d_node->fd_s->n_written = strlen("undefined request");//test
+	s_d_node->fd_s->kepp_alive = 0;
+	free(s_d_node->data);
+	free(s_d_node);
+}
+
+route_fun * get_handle_function(unsigned char type)
+{
+	switch (type)
+	{
+	case 0:
+		return stream_handle;
+		break;
+	case 1:
+		return json_handle;
+		break;
+	default:
+		return undefined_handle;
+	};
+}
+
+void handle_socket_receive_data(void * data)
+{
+	fd_state * fd_s = data;
+	socket_head * s_h = fd_s->buffer;
+	real_data_node  * s_d_node = malloc(sizeof(real_data_node));
+	//	printf("handle_socket_receive_data start\n");
+	//	printf("data type===[%d]\n", s_h->type);
+	//	printf("data enc_type===[%d]\n", s_h->enc_type);
+	//	printf("data keepalive===[%d]\n", s_h->keep_alive);
+	//	printf("data length===[%d]\n", s_h->length);
+	//	printf("handle_socket_receive_data end\n");
+	if (s_h->enc_type)//decrypt , not think yet
+		;
+
+	s_d_node->len = s_h->length - sizeof(socket_head);
+	s_d_node->data = malloc(s_d_node->len);
+	memcpy(s_d_node->data, fd_s->buffer + sizeof(socket_head), s_d_node->len);
+	s_d_node->fd_s = fd_s;
+	get_handle_function(s_h->type)(s_d_node);
+}
 
 void aeSocketWrite(struct aeEventLoop *eventLoop, int fd, void *clientData, int mask)
 {
@@ -82,87 +168,6 @@ void aeSocketWrite(struct aeEventLoop *eventLoop, int fd, void *clientData, int 
 		socket_close(fd);
 	}
 }
-
-void cmd_handle(void * data)
-{
-	server_data_node  * s_d_node = data;
-	printf("cmd_handle\n");
-	memset(s_d_node->fd_s->buffer , 0 , sizeof(s_d_node->fd_s->buffer));
-	memset(s_d_node->fd_s->buffer , 12 , 88);
-	s_d_node->fd_s->n_written = 88;//test
-
-	free(s_d_node->data);
-	free(s_d_node);
-}
-void struct1_handle(void * data)
-{
-	server_data_node  * s_d_node = data;
-	printf("struct1_handle\n");
-
-
-	free(s_d_node->data);
-	free(s_d_node);
-}
-void json_handle(void * data)
-{
-	server_data_node  * s_d_node = data;
-	printf("json_handle\n");
-
-
-	free(s_d_node->data);
-	free(s_d_node);
-}
-void undefined_handle(void * data)
-{
-	server_data_node  * s_d_node = data;
-//	printf("undefined_handle\n");
-	memset(s_d_node->fd_s->buffer, 0, sizeof(s_d_node->fd_s->buffer));
-	strcpy(s_d_node->fd_s->buffer , "undefined request");
-	s_d_node->fd_s->n_written = strlen("undefined request");//test
-	s_d_node->fd_s->kepp_alive = 0;
-	free(s_d_node->data);
-	free(s_d_node);
-}
-
-void * get_function(unsigned char type)
-{
-	switch (type)
-	{
-	case 0:
-		return cmd_handle;
-		break;
-	case 1:
-		return struct1_handle;
-		break;
-	case 2:
-		return json_handle;
-		break;
-	default:
-		return undefined_handle;
-	};
-}
-
-void handle_socket_receive_data(void * data)
-{
-	fd_state * fd_s = data;
-	socket_head * s_h = fd_s->buffer;
-	server_data_node  * s_d_node = malloc(sizeof(server_data_node));
-//	printf("handle_socket_receive_data start\n");
-//	printf("data type===[%d]\n", s_h->type);
-//	printf("data enc_type===[%d]\n", s_h->enc_type);
-//	printf("data keepalive===[%d]\n", s_h->keep_alive);
-//	printf("data length===[%d]\n", s_h->length);
-//	printf("handle_socket_receive_data end\n");
-	if (s_h->enc_type)//decrypt , not think yet
-		;
-
-	s_d_node->len = s_h->length - sizeof(socket_head);
-	s_d_node->data = malloc(s_d_node->len);
-	memcpy(s_d_node->data , fd_s->buffer + sizeof(socket_head) , s_d_node->len);
-	s_d_node->fd_s = fd_s;
-	threadpool_add(get_function(s_h->type) , s_d_node, 0);
-}
-
 
 void aeSocketRead(struct aeEventLoop *eventLoop, int fd, void *clientData, int mask)
 {
@@ -260,12 +265,10 @@ int socket_server_start(char * ip , short port , int backlog)
 	int server_listener = socket_listen(ip, port, backlog);
 	socket_set_nonblock(server_listener);
 	aeCreateFileEvent(g_ael, server_listener, AE_READABLE, aeDoAccept, NULL);
-	socket_server_do = listCreate();
-	socket_server_write = listCreate();
+
 	aeMain(g_ael);
+
 	aeDeleteEventLoop(g_ael);
-	listRelease(socket_server_do);
-	listRelease(socket_server_write);
 
 
 }

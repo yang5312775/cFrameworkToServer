@@ -68,7 +68,8 @@ int mysqlConnectionPoolInit(char * mysqlIP , char * mysqlPort , char * mysqlAcco
 
 int mysqlConnectionPoolUnInit(void)
 {
-
+	if (g_mysql_conn_enable == 0)
+		return 0;
 	for (int i = 0; i < sqlC.connectCount; i++)
 	{
 		mysql_close(mysqlBlock[i].conn);

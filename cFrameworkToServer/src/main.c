@@ -1,16 +1,14 @@
 #include<basic.h>
+#include<service.h>
+
 
 #define SYS_NAME "xxxxxxxxxxxxxxxxxxx"
 #define VERSION	"0.1"
 
-#define TEST
-
-
-
+//#define TEST
 
 int main(int argc, const char * argv[])
 {
-//	printf("%s\n" , START_SLOGAN);
 	int ret = 0;
 	if (argc != 2)
 	{
@@ -71,38 +69,43 @@ int main(int argc, const char * argv[])
 		}
 	}
 	log_print(L_INFO, "[%s] mysql connection create success, mysql connection pool init success!!\n", getConfig("MysqlConnectionPoolMaxCount"));
-
-	socket_server_start(NULL , atoi(getConfig("ServerPort")) , atoi(getConfig("BackLog")));   //block here!!!
-
-
-
-
+	//初始化业务方法注册
+	ret = regist_service();
+	if (ret != RETURN_OK)
+	{
+		printf("service regist fail , errcode [%d]\n", ret);
+		goto exit;
+	}
 
 #ifdef TEST
 //	TIME_PRINT(EXTERN_RUN(test_memory_pool););
 //	TIME_PRINT(EXTERN_RUN(test_list););
 //	TIME_PRINT(EXTERN_RUN(test_pool_event););
-	
 	TIME_PRINT(EXTERN_RUN(test_threadpool););
+#else
+	socket_server_start(NULL, atoi(getConfig("ServerPort")), atoi(getConfig("BackLog")));   //block here!!!
 #endif
 
 
-exit:	getchar();
-
+exit:	
 
 	//数据库连接模块池销毁
 	mysqlConnectionPoolUnInit();
 	log_print(L_INFO, "mysql connection pool uninit success\n");
+	//线程池销毁
+	threadpool_destroy(atoi(getConfig("ThreadpoolQuitType")));
 	//配置参数模块销毁
 	configerUnInit();
 	log_print(L_INFO, "log module uninit success\n");
 	//log系统销毁 为了保证log_print正常使用，一般最后调用。
 	log_print(L_INFO, "log module uninit start!\n");
 	log_uninit();
-	//线程池销毁
-	threadpool_destroy(atoi(getConfig("ThreadpoolQuitType")));
+	//服务入口销毁
+	destory_service();
+	init_function_route();
 	//内存池销毁
 	memoryPoolUnInit();
+	getchar();
 	return 0;
 
 }

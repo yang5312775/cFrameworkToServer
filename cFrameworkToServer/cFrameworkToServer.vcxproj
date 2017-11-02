@@ -71,7 +71,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)utils\event;$(ProjectDir)utils\basic_struct;$(ProjectDir)utils;$(ProjectDir)third\pthread\include;$(ProjectDir)third\mysql\include;$(ProjectDir)third\openssl;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)src\model;$(ProjectDir)utils\event;$(ProjectDir)utils\basic_struct;$(ProjectDir)utils;$(ProjectDir)third\pthread\include;$(ProjectDir)third\mysql\include;$(ProjectDir)src\service;$(ProjectDir)third\openssl;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)third\openssl\lib\win32;$(ProjectDir)third\pthread\lib\win32;$(ProjectDir)third\mysql\lib\win32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -156,6 +156,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.c" />
+    <ClCompile Include="src\service\service.c" />
     <ClCompile Include="test\test_dict.c" />
     <ClCompile Include="test\test_en_de_crypt.c" />
     <ClCompile Include="test\test_basic.c" />
@@ -178,6 +179,7 @@
     <ClCompile Include="utils\en_de_crypt.c" />
     <ClCompile Include="utils\event\ae.c" />
     <ClCompile Include="utils\event\ae_select.c" />
+    <ClCompile Include="utils\function_route.c" />
     <ClCompile Include="utils\log.c" />
     <ClCompile Include="utils\memory_pool.c" />
     <ClCompile Include="utils\mysql_basic.c" />
@@ -188,6 +190,7 @@
     <ClCompile Include="utils\thread_pool.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\service\service.h" />
     <ClInclude Include="third\pthread\include\pthread.h" />
     <ClInclude Include="third\pthread\include\sched.h" />
     <ClInclude Include="third\pthread\include\semaphore.h" />
@@ -200,6 +203,7 @@
     <ClInclude Include="utils\define.h" />
     <ClInclude Include="utils\en_de_crypt.h" />
     <ClInclude Include="utils\event\ae.h" />
+    <ClInclude Include="utils\function_route.h" />
     <ClInclude Include="utils\log.h" />
     <ClInclude Include="utils\memory_pool.h" />
     <ClInclude Include="utils\mysql_basic.h" />

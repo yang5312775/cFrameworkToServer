@@ -42,6 +42,8 @@
 #include"event\ae.h"
 #include"socket_basic.h"
 #include"socket_server.h"
+#include"function_route.h"
+#include"c_json.h"
 //linux include file
 #ifdef __GNUC__
 #include <unistd.h>
@@ -60,6 +62,7 @@
 #include <poll.h>
 #include <sys/time.h>
 #include <sys/event.h>
+
 
 //windows include file
 #elif _MSC_VER
@@ -238,17 +241,5 @@ extern void sh_pause(void);
 
 #endif // !INIT_PAUSE
 #endif
-
-// 定义一些通用的函数指针帮助, 主要用于基库的封装.
-// 有构造函数, 析构函数, 比较函数, 轮询函数 ... 
-// icmp_f   - int icmp(const void * ln, const void * rn); 标准结构
-// each_f   - int <-> int, each循环操作, arg 外部参数, node 内部节点
-// start_f  - pthread 线程启动的辅助函数宏, 方便优化
-//
-typedef int(*icmp_f)();
-typedef void *  (*vnew_f)();
-typedef void(*node_f)(void * node);
-typedef int(*each_f)(void * node, void * arg);
-typedef void *  (*start_f)(void * arg);
 
 #endif

@@ -43,7 +43,8 @@ int configerInit(char * configFilePath)
 
 void configerUnInit(void)
 {
-	dictRelease(dict_config);
+	if(dict_config != NULL)
+		dictRelease(dict_config);
 }
 
 char * getConfig(char * key)

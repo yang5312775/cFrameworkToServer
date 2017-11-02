@@ -83,6 +83,26 @@ dictType BenchmarkDictType = {
 	freeCallback,
 	freeCallback
 };
+
+dictType BenchmarkDictTypeNoFreeValue = {
+	hashCallback,
+	NULL,
+	NULL,
+	compareCallback,
+	freeCallback,
+	NULL
+};
+
+
+/* Create a new hash table ex*/
+dict *dictCreateNoFreeValue(void)
+{
+	dict *d = malloc(sizeof(*d));
+
+	_dictInit(d, &BenchmarkDictTypeNoFreeValue, NULL);
+	return d;
+}
+
 /* Create a new hash table ex*/
 dict *dictCreateEx(void)
 {

@@ -92,7 +92,13 @@ int log_init(char * log_root_path, int log_level, int log_save_days)
 
 int log_uninit(void)
 {
-	g_log_enable = 0;
+	if (g_log_enable == 1)
+	{
+		fflush(g_logFile);
+		fclose(g_logFile);
+		g_logFile = NULL;
+		g_log_enable = 0;
+	}
 	return 0;
 }
 

@@ -55,6 +55,8 @@
     <ClCompile Include="test\test_poll_event.c" />
     <ClCompile Include="test\test_thread_pool.c" />
     <ClCompile Include="utils\socket_server.c" />
+    <ClCompile Include="utils\function_route.c" />
+    <ClCompile Include="src\service\service.c" />
   </ItemGroup>
   <ItemGroup>
     <None Include="conf\config.ini">
@@ -85,6 +87,8 @@
     <ClInclude Include="utils\basic_struct\rtree.h" />
     <ClInclude Include="utils\event\ae.h" />
     <ClInclude Include="utils\socket_server.h" />
+    <ClInclude Include="utils\function_route.h" />
+    <ClInclude Include="src\service\service.h" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="third\openssl\lib\win32\libeay32.lib" />
