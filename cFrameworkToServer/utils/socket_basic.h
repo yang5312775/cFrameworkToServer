@@ -178,4 +178,8 @@ extern int socket_connects(socket_t s, const char * ip, uint16_t port);
 extern int socket_connecto(socket_t s, const sockaddr_t * addr, int ms);
 extern socket_t socket_connectos(const char * host, uint16_t port, int ms);
 
+
+int setSocketSendBuf(socket_t s, int size);
+
+
 #endif // !_H_SIMPLEC_SCSOCKET

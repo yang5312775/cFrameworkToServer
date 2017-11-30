@@ -2,6 +2,16 @@
 #define _H_EN_DE_CRYPT
 #include <basic.h>
 
+#define ENC_TYPE_NONE	0
+#define ENC_TYPE_AES	1
+#define ENC_TYPE_RSA	2
+
+typedef struct {
+	unsigned char   enc_type;   //加密类型
+	unsigned char	length[4];	//数据被加密后的总长度
+	unsigned char	padding;    //被加密数据末尾补齐长度
+	unsigned char	random[4];  //加密随机值
+}enc_head;
 
 //aes加密
 int DbsAesEncrypt(unsigned char * key, unsigned char * dataInputOutput, int len);
@@ -48,4 +58,9 @@ int DBSRsaPrivateEncrypt(unsigned char * MOD, unsigned char * PrivExp, unsigned 
 //RSA私钥解密
 int DBSRsaPrivateDecrypt(unsigned char * MOD, unsigned char * PrivExp, unsigned char * DataInputOutput, int dataLen);
 
+//用某种加密算法加密输入数据
+int encryptData(unsigned char *dataInput, int inputLen, int maxLen, char encryptType);
+
+//用某种加密算法解密被加密的数据
+int decryptData(unsigned char *dataInput, char encryptType);
 #endif

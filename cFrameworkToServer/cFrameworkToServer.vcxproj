@@ -156,7 +156,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.c" />
+    <ClCompile Include="src\model\appVersion.c" />
+    <ClCompile Include="src\model\notice.c" />
+    <ClCompile Include="src\model\user.c" />
+    <ClCompile Include="src\service\cache.c" />
+    <ClCompile Include="src\service\massage_gateway.c" />
     <ClCompile Include="src\service\service.c" />
+    <ClCompile Include="src\service\service_basic.c" />
     <ClCompile Include="test\test_dict.c" />
     <ClCompile Include="test\test_en_de_crypt.c" />
     <ClCompile Include="test\test_basic.c" />
@@ -168,6 +174,11 @@
     <ClCompile Include="test\test_mysql_basic.c" />
     <ClCompile Include="test\test_mysql_connection_pool.c" />
     <ClCompile Include="test\test_poll_event.c" />
+    <ClCompile Include="test\test_socket.c" />
+    <ClCompile Include="test\test_socketsafe.c" />
+    <ClCompile Include="test\test_table_appUpdate.c" />
+    <ClCompile Include="test\test_table_notice.c" />
+    <ClCompile Include="test\test_table_user.c" />
     <ClCompile Include="test\test_thread_pool.c" />
     <ClCompile Include="utils\basic.c" />
     <ClCompile Include="utils\basic_struct\dict.c" />
@@ -177,6 +188,7 @@
     <ClCompile Include="utils\c_json.c" />
     <ClCompile Include="utils\config.c" />
     <ClCompile Include="utils\en_de_crypt.c" />
+    <ClCompile Include="utils\error.c" />
     <ClCompile Include="utils\event\ae.c" />
     <ClCompile Include="utils\event\ae_select.c" />
     <ClCompile Include="utils\function_route.c" />
@@ -190,7 +202,14 @@
     <ClCompile Include="utils\thread_pool.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\model\appVersion.h" />
+    <ClInclude Include="src\model\model.h" />
+    <ClInclude Include="src\model\notice.h" />
+    <ClInclude Include="src\model\user.h" />
+    <ClInclude Include="src\service\cache.h" />
+    <ClInclude Include="src\service\message_gateway.h" />
     <ClInclude Include="src\service\service.h" />
+    <ClInclude Include="src\service\service_basic.h" />
     <ClInclude Include="third\pthread\include\pthread.h" />
     <ClInclude Include="third\pthread\include\sched.h" />
     <ClInclude Include="third\pthread\include\semaphore.h" />
@@ -200,7 +219,7 @@
     <ClInclude Include="utils\basic_struct\rtree.h" />
     <ClInclude Include="utils\c_json.h" />
     <ClInclude Include="utils\config.h" />
-    <ClInclude Include="utils\define.h" />
+    <ClInclude Include="utils\error.h" />
     <ClInclude Include="utils\en_de_crypt.h" />
     <ClInclude Include="utils\event\ae.h" />
     <ClInclude Include="utils\function_route.h" />

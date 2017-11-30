@@ -12,6 +12,10 @@ char g_log_name[64] = { 0 };
 int g_log_level = 3;
 int	g_oldDay = 0;
 int g_log_save_days = 30;
+list * log_list = NULL;
+pthread_spinlock_t  log_spin_lock;
+pthread_mutex_t log_lock;
+pthread_t log_pid;
 
 
 int update_logname(char * logname)
@@ -29,11 +33,13 @@ int update_logname(char * logname)
 
 void* log_handle(void* Param)
 {
-	log_msg * msg = Param;
 	int ret = -1;
 	char path[512] = { 0 };
 	char name_new[64] = { 0 };
 	int i = 0;
+	log_msg * msg = Param;
+	if (msg == NULL)
+		return;
 	if (update_logname(name_new) == 1)
 	{
 		memset(path, 0, 512);
@@ -59,8 +65,27 @@ void* log_handle(void* Param)
 		return;
 	fwrite(msg->data_body, 1, strlen(msg->data_body), g_logFile);
 	fflush(g_logFile);
-	FREE(msg->data_body);
-	FREE(msg);
+	free(msg->data_body);
+	free(msg);
+}
+
+void * log_thread_handle(void * Param)
+{
+	list * logList = Param;
+	for (;;)
+	{
+		
+		pthread_mutex_lock(&log_lock);
+		for (;;)
+		{
+			pthread_spin_lock(&log_spin_lock);
+			void * data = listPopNodeFromTail(logList);
+			pthread_spin_unlock(&log_spin_lock);
+			if (data == NULL)
+				break;
+			log_handle(data);
+		}
+	}
 }
 
 int log_init(char * log_root_path, int log_level, int log_save_days)
@@ -85,7 +110,12 @@ int log_init(char * log_root_path, int log_level, int log_save_days)
 		return ERR_LOG_SAVE_DAYS_INVALID;
 	if (log_save_days != 0)
 		g_log_save_days = log_save_days;
-
+	log_list = listCreate();
+	pthread_mutex_init(&log_lock, NULL);
+	pthread_mutex_lock(&log_lock);
+	pthread_spin_init(&log_spin_lock, PTHREAD_PROCESS_PRIVATE);
+	pthread_create(&log_pid, NULL, log_thread_handle, log_list);
+	
 	g_log_enable = 1;
 	return 0;
 }
@@ -97,6 +127,9 @@ int log_uninit(void)
 		fflush(g_logFile);
 		fclose(g_logFile);
 		g_logFile = NULL;
+		pthread_spin_lock(&log_spin_lock);
+		pthread_spin_destroy(&log_spin_lock);
+//		pthread_mutex_destroy
 		g_log_enable = 0;
 	}
 	return 0;
@@ -107,8 +140,8 @@ int log_print(int level, const char *format, ...)
 	if (g_log_enable == 0)
 		return ERR_LOG_NOT_INIT;
 	va_list arg;
-	char * buffer = MALLOC(500);
-	char * buffer2 = MALLOC(500);
+	char * buffer = malloc(500);
+	char * buffer2 = malloc(500);
 	time_t time_log = time(NULL);
 	struct tm* tm_log = localtime(&time_log);
 	switch (level)
@@ -164,11 +197,15 @@ int log_print(int level, const char *format, ...)
 	vsprintf(buffer2, format, arg);
 	va_end(arg);
 	strcat(buffer, buffer2);
-	FREE(buffer2);
-	log_msg * msg = MALLOC(sizeof(log_msg));
+	strcat(buffer, "\n");
+	free(buffer2);
+	log_msg * msg = malloc(sizeof(log_msg));
 	msg->level = level;
 	msg->data_body = buffer;
-	threadpool_add(log_handle, msg, 0);
+	pthread_spin_lock(&log_spin_lock);
+	listAddNodeToHead(log_list, msg);
+	pthread_spin_unlock(&log_spin_lock);
+	pthread_mutex_unlock(&log_lock);
 	return 0;
 }
 

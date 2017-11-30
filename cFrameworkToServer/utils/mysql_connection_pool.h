@@ -1,17 +1,22 @@
 #ifndef mysqlConnectPool_h
 #define mysqlConnectPool_h
-#include<basic.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include<mysql.h>
 #include"log.h"
 #include"config.h"
+#include"basic_struct\list.h"
+
 #define MYSQL_CONNECTION_POLL_IS_FULL  100
 
 
-typedef struct {
+
+typedef struct mysqlblock {
 	MYSQL sql;
 	MYSQL* conn;
-	unsigned char useFlag;
 	unsigned int lastUseTime;
-} MysqlBlock;
+}MysqlBlock;
 
 typedef struct {
 	char ip[16];
@@ -27,9 +32,9 @@ int mysqlConnectionPoolInit(char * mysqlIP, char * mysqlPort, char * mysqlAccoun
 
 int mysqlConnectionPoolUnInit(void);
 
-MYSQL * mysqlConnectionPool_GetOneConn(void);
+MysqlBlock * mysqlConnectionPool_GetOneConn(void);
 
-int mysqlConnectionPool_FreeOneConn(MYSQL * conn);
+void mysqlConnectionPool_FreeOneConn(MysqlBlock * conn);
 
-int testConnection(MYSQL* conn);
+
 #endif

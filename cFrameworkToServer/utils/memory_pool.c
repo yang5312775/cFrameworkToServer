@@ -128,6 +128,8 @@ int memoryPoolUnInit(void)
 	}
 	free(b_p);
 	b_p = NULL;
+	pthread_spin_lock(&memory_spin_lock);
+	pthread_spin_destroy(&memory_spin_lock);
 	buffer_pool_no = 0;
 	return RETURN_OK;
 }

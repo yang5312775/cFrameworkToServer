@@ -67,8 +67,9 @@ int main(int argc, const char * argv[])
 			printf("mysqlConnectionPoolInit fail , errcode [%d]\n", ret);
 			goto exit;
 		}
+		log_print(L_INFO, "[%s] mysql connection create success, mysql connection pool init success!!\n", getConfig("MysqlConnectionPoolMaxCount"));
 	}
-	log_print(L_INFO, "[%s] mysql connection create success, mysql connection pool init success!!\n", getConfig("MysqlConnectionPoolMaxCount"));
+	
 	//初始化业务方法注册
 	ret = regist_service();
 	if (ret != RETURN_OK)
@@ -81,7 +82,7 @@ int main(int argc, const char * argv[])
 //	TIME_PRINT(EXTERN_RUN(test_memory_pool););
 //	TIME_PRINT(EXTERN_RUN(test_list););
 //	TIME_PRINT(EXTERN_RUN(test_pool_event););
-	TIME_PRINT(EXTERN_RUN(test_threadpool););
+	TIME_PRINT(EXTERN_RUN(test_table_user););
 #else
 	socket_server_start(NULL, atoi(getConfig("ServerPort")), atoi(getConfig("BackLog")));   //block here!!!
 #endif

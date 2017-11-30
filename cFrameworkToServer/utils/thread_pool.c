@@ -1,9 +1,7 @@
 //在原有thread pool基础之上进行修改,引入框架中的list结构，去掉自实现链表部分
-
 #include "thread_pool.h"
 
 threadpool_t * G_THREAD_POOL = NULL;   //线程池全局句柄
-
 typedef enum {
     immediate_shutdown = 1,
     graceful_shutdown  = 2

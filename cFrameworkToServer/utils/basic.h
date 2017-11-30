@@ -30,20 +30,20 @@
 #include <openssl/buffer.h>  
 
 //internal include file
-#include"define.h"
+#include"error.h"
 #include"config.h"
 #include"log.h"
 #include"memory_pool.h"
 #include"random.h"
 #include"basic_struct\dict.h"
 #include"basic_struct\list.h"
-#include"mysql_connection_pool.h"
 #include"thread_pool.h"
 #include"event\ae.h"
 #include"socket_basic.h"
-#include"socket_server.h"
+//#include"socket_server.h"
 #include"function_route.h"
 #include"c_json.h"
+
 //linux include file
 #ifdef __GNUC__
 #include <unistd.h>

@@ -225,3 +225,78 @@ int DBSRsaPrivateDecrypt(unsigned char * MOD, unsigned char * PrivExp, unsigned 
 	RSA_free(RsaKey);
 	return 0;
 }
+/*****************************************************************/
+//加密数据使用
+//参数1 dataInput 需要加密的数据头指针
+//参数2 inputLen  加密数据的长度
+//参数3 maxLen  加密数据缓冲区最大长度，由于加密后的数据总长度要大于加密之前，\
+但是加密之后数据还想复用加密前的缓冲区，所以一般承载加密数据的缓冲区要大于加密数据长度，\
+一般最少大 30字节
+//参数4, encryptType 加密数据类型，目前只支持ENC_TYPE_AES加密
+//返回值 解密后的数据长度
+/*****************************************************************/
+int encryptData(unsigned char *dataInput, int inputLen, int maxLen, char encryptType)
+{
+	enc_head head;
+	int random, length, padding;
+	unsigned char * buffTemp = NULL;
+	unsigned char key[16];
+	if (dataInput == NULL)
+		return -2;
+	padding = 16 - (inputLen % 16);
+	length = padding + inputLen + sizeof(enc_head);
+	if (length > maxLen)
+		return -1;
+	if (encryptType != ENC_TYPE_AES)
+		return -3;
+	memset(&head, 0, sizeof(enc_head));
+	head.enc_type = encryptType;
+	random = srand_get_int32();
+	memset(key, 0, 16);
+	memcpy(key, &random, 4);
+	memcpy(head.random, key, 4);
+	length = inputLen + padding;
+	length = ENDIAN_DWRD(length);
+	memcpy(head.length, &length, sizeof(head.length));
+	head.padding = padding;
+	length = inputLen + padding;
+	buffTemp = malloc(length);
+	memset(buffTemp, 0, length);
+	memcpy(buffTemp, dataInput, inputLen);
+	DbsAesEncrypt(key, buffTemp, length);
+	memcpy(dataInput, &head, sizeof(enc_head));
+	memcpy(dataInput + sizeof(enc_head), buffTemp, length);
+	free(buffTemp);
+	return (sizeof(enc_head) + length);
+}
+/*****************************************************************/
+//解密数据使用
+//参数1 dataInput 需要解密的数据头指针
+//参数2 encryptType  解密算法
+//返回值 解密后的数据长度
+/*****************************************************************/
+int decryptData(unsigned char *dataInput, char encryptType)
+{
+	enc_head head;
+	int random, length, padding;
+	unsigned char * buffTemp = NULL;
+	unsigned char key[16];
+	if (dataInput == NULL)
+		return -2;
+	if (encryptType != ENC_TYPE_AES)
+		return -3;
+	memset(&head, 0, sizeof(enc_head));
+	memcpy(&head, dataInput, sizeof(enc_head));
+	length = *(unsigned int *)head.length;
+	length = ENDIAN_DWRD(length);
+	memset(key, 0, 16);
+	memcpy(key, head.random, 4);
+	buffTemp = malloc(length);
+	memset(buffTemp, 0, length);
+	memcpy(buffTemp, dataInput + sizeof(enc_head), length);
+	DbsAesDecrypt(key, buffTemp, length);
+	memcpy(dataInput, buffTemp, length - head.padding);
+	//	memset(dataInput + length - head.padding, 0, maxLen - length + head.padding);
+	free(buffTemp);
+	return (length - head.padding);
+}

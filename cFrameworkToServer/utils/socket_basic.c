@@ -452,3 +452,12 @@ socket_connectos(const char * host, uint16_t port, int ms) {
 
     return s;
 }
+
+int setSocketSendBuf(socket_t s, int size)
+{
+	int length = size;
+	socklen_t len = sizeof(length);
+	int code = setsockopt(s, SOL_SOCKET, SO_SNDBUF, (char *)&length, &len);
+	 code = setsockopt(s, SOL_SOCKET, SO_RCVBUF, (char *)&length, &len);
+//	printf("code===%d\n" , code);
+}
